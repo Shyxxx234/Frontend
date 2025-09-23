@@ -1,0 +1,22 @@
+{
+  "name": "lab1",
+  "version": "1.0.0",
+  "description": "Calculator",
+  "main": "calc.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shyxxx234/Frontend.git"
+  },
+  "author": "Maksim Sayfulin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shyxxx234/Frontend/issues"
+  },
+  "homepage": "https://github.com/Shyxxx234/Frontend#readme",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
