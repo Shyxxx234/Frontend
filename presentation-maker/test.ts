@@ -1,79 +1,20 @@
-type Presentation = SlideCollection & ElementSelection & {
-    title: string;
-}
-
-type Slide = {
-    background: Background;
-    slideObject: Array<SlideObject>;
-    id: string;
-}
-
-type Background = Color | Picture;
-
-type Color = {
-    type: 'color';
-    color: string;
-}
-
-type Picture = {
-    type: 'picture';
-    src: string;
-}
-
-type SlideCollection = {
-    slides: Array<Slide>;
-}
-
-type ElementSelection = {
-    selectedSlide: number;
-    selectedObjects: Array<number>;
-}
-
-type SlideObject = PlainText | Image;
-
-type PlainText = BaseSlideObject & {
-    type: 'plain_text';
-    content: string;
-    fontFamily: string;
-    weight: number;
-    scale: number;
-} 
-
-type Image = BaseSlideObject & Picture;
-
-type BaseSlideObject = {
-    rect: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
-    id: string;
-}
-
-const blankSlide: Slide = {
-    background: {
-        type: "color",
-        color: "#FFFFFF",
-    },
-    slideObject: [],
-    id: "0",
-}
-
-const blankText: SlideObject = {
-    type: "plain_text",
-    content: "",
-    fontFamily: "Arial",
-    weight: 400,
-    scale: 1.0, 
-    rect: {
-        x: 0,
-        y: 0,
-        width: 255,
-        height: 50
-    },
-    id: "0"
-}
+import {type Presentation, 
+    changeBackgroundToColor,
+    changePresentationName,
+    addSlide,
+    replaceSlide, 
+    removeSlide,
+    addSlideObject,
+    changePlainTextContent,
+    blankSlide, 
+    blankText,
+    changePlainTextFontFamily, 
+    changePlainTextScale, 
+    changeBackgroundToImage,
+    changeSlideObjectPosition, 
+    changeSlideObjectScale,
+    removeSlideObject,
+    } from './typeAndFunctions.js';
 
 let presentationMin: Presentation = {
     title: "",
@@ -112,7 +53,7 @@ let presentationMax: Presentation = {
                         width: 200,
                         height: 50
                     },
-                    id: "0"
+                    id: "1"
                 },
                 {
                     type: "plain_text",
@@ -126,7 +67,7 @@ let presentationMax: Presentation = {
                         width: 200,
                         height: 50
                     },
-                    id: "1"
+                    id: "2"
                 },
                 {
                     type: "picture",
@@ -137,7 +78,7 @@ let presentationMax: Presentation = {
                         width: 500,
                         height: 500
                     },
-                    id: "2"
+                    id: "3"
                 }
             ],
             id: "0"
@@ -160,7 +101,7 @@ let presentationMax: Presentation = {
                         width: 340,
                         height: 57
                     },
-                    id: "0"
+                    id: "5"
                 },
                 {
                     type: "plain_text",
@@ -174,7 +115,7 @@ let presentationMax: Presentation = {
                         width: 200,
                         height: 50
                     },
-                    id: "1"
+                    id: "6"
                 },
                 {
                     type: "picture",
@@ -185,15 +126,15 @@ let presentationMax: Presentation = {
                         width: 500,
                         height: 500
                     },
-                    id: "2"
+                    id: "7"
                 }
             ],
-            id: "1"
+            id: "4"
         },
         {
             background: {
                 type: "picture",
-                src: "images/image.png"
+                src: "images/image.png" //url
             },
             slideObject: [
                 {
@@ -208,7 +149,7 @@ let presentationMax: Presentation = {
                         width: 340,
                         height: 57
                     },
-                    id: "0"
+                    id: "9"
                 },
                 {
                     type: "plain_text",
@@ -222,120 +163,14 @@ let presentationMax: Presentation = {
                         width: 200,
                         height: 50
                     },
-                    id: "1"
+                    id: "10"
                 },
             ],
-            id: "2"
+            id: "8"
         },
     ],
     selectedObjects: [],
     selectedSlide: 0
-}
-
-function structuredClonePresentation(presentation: Presentation): Presentation {
-    return JSON.parse(JSON.stringify(presentation));
-}
-
-function changePresentationName(presentation: Presentation, name: string): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.title = name;
-    return presentationCopy;
-}
-
-function addSlide(presentation: Presentation, slide: Slide, idx: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy.slides.splice(idx, 0, slide);
-    }
-    return presentationCopy;
-}
-
-function removeSlide(presentation: Presentation, idx: number): Presentation {
-    const presentationCopy= structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy.slides.splice(idx, 1);
-    }
-    return presentationCopy;
-}
-
-function replaceSlide(presentation: Presentation, slide: Slide, insertSpot: number): Presentation {
-    let presentationCopy = structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy = removeSlide(presentationCopy, Number(slide.id));
-        presentationCopy = addSlide(presentationCopy, slide, insertSpot);
-    } 
-    return presentationCopy;
-}
-
-function addSlideObject(presentation: Presentation, slideObject: SlideObject, idx: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject.splice(idx, 0, slideObject);
-    return presentationCopy;
-}
-
-function removeSlideObject(presentation: Presentation, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject.splice(id, 1);
-    return presentationCopy;
-}
-
-function changePlainTextContent(presentation: Presentation, content: string, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.content = content;
-    }
-    return presentationCopy;
-}
-
-function changePlainTextScale(presentation: Presentation, scale: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation); 
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.scale = scale;
-    }
-    return presentationCopy;
-}
-
-function changePlainTextFontFamily(presentation: Presentation, fontFamily: string, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.fontFamily = fontFamily;
-    }
-    return presentationCopy;
-}
-
-function changeBackgroundToColor(presentation: Presentation, color: string, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].background = {
-        type: 'color',
-        color: color
-    };
-    return presentationCopy;
-}
-
-function changeBackgroundToImage(presentation: Presentation, imageSrc: string, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].background = {
-        type: "picture",
-        src: imageSrc
-    };
-    return presentationCopy;
-}
-
-function changeSlideObjectScale(presentation: Presentation, height: number, width: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject[id].rect.height = height;
-    presentationCopy.slides[slideId].slideObject[id].rect.width = width;
-    return presentationCopy;
-}
-
-function changeSlideObjectPosition(presentation: Presentation, x: number, y: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject[id].rect.x = x;
-    presentationCopy.slides[slideId].slideObject[id].rect.y = y;
-    return presentationCopy;
 }
 
 console.log("Change name: ", JSON.stringify(presentationMin, null, 2));
