@@ -1,0 +1,38 @@
+.toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    width: 100%;
+    height: 10%;
+    background-color: #2E2C2C;
+    justify-content: space-between;
+}
+
+.toolbar__button {
+    width: auto;
+    height: 50px;
+    margin-top: 30px;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: transparent;
+    margin-left: 10px;
+}
+.toolbar__title {
+    border-radius: 10px;
+    width: auto;
+    height: 50px;
+    margin-top: 10px;
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    outline: none;
+    background: none;
+    transition: none;
+}
+
+.toolbar__title-button {
+    background: none;
+}
+
+.button__slide-show {
+    margin-right: 10px;
+}

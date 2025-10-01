@@ -1,0 +1,12 @@
+.workspace {
+    position: absolute;
+    border-radius: 10px;
+    width: 1008px;
+    height: 567px;
+    left: 30%;
+    top: 20%
+}
+
+.workspace__slide {
+    border-radius: 10px;
+}
