@@ -2,12 +2,16 @@ import type { Slide } from "../store/typeAndFunctions";
 
 type ShowSlideProps = {
     slide: Slide;
-    className: string;
-    coef: number;
+    disableObjectClicks: boolean;
+    className?: string;
 }
 
 export function ShowSlide(props: ShowSlideProps) {
-    const { slide } = props;
+    const handleObjectClick = (event: React.MouseEvent, objId: string) => {
+        if (props.disableObjectClicks) return;
+        event.stopPropagation();
+        console.log("Clicked object ID:", objId);
+    };
 
     return (
         <div
@@ -16,20 +20,24 @@ export function ShowSlide(props: ShowSlideProps) {
                 position: 'relative',
                 width: '100%',
                 height: '100%',
-                backgroundColor: slide.background.type === 'color' ? slide.background.color : 'transparent',
-                backgroundImage: slide.background.type === 'picture' ? `url(${slide.background.src})` : 'none',
-                backgroundPosition: 'center'
+                backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
+                backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
             }}
         >
-            {slide.slideObject.map(obj => (
+            {props.slide.slideObject.map(obj => (
                 <div
                     key={obj.id}
+                    onClick={(event) => handleObjectClick(event, obj.id)}
                     style={{
                         position: 'absolute',
-                        left: obj.rect.x / props.coef,
-                        top: obj.rect.y / props.coef,
-                        width: obj.rect.width / props.coef,
-                        height: obj.rect.height / props.coef
+                        left: obj.rect.x,
+                        top: obj.rect.y,
+                        width: obj.rect.width,
+                        height: obj.rect.height,
+                        cursor: 'pointer'
                     }}
                 >
                     {obj.type === 'plain_text' && (
@@ -37,7 +45,7 @@ export function ShowSlide(props: ShowSlideProps) {
                             style={{
                                 fontFamily: obj.fontFamily,
                                 fontWeight: obj.weight,
-                                fontSize: `${obj.scale / props.coef}em`,
+                                fontSize: `${obj.scale}em`,
                                 width: '100%',
                                 height: '100%'
                             }}
@@ -51,7 +59,9 @@ export function ShowSlide(props: ShowSlideProps) {
                             style={{
                                 width: '100%',
                                 height: '100%',
+                                objectFit: 'contain'
                             }}
+                            alt=""
                         />
                     )}
                 </div>

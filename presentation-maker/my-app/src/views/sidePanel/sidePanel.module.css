@@ -1,0 +1,34 @@
+.sidePanel {
+    position: absolute;
+    left: 94%;
+    top: 30%;
+    width: 5%;
+    height: 50%;
+    background-color: #16111E;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.buttonAddSlide {
+    margin-top: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+}
+
+.buttonAddSlide:hover {
+    opacity: 0.8;
+}
+
+.addSlide {
+    width: 100%;
+    height: auto;
+}

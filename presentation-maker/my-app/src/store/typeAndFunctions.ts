@@ -91,6 +91,12 @@ function generateTimestampId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
+export function selectSlide(presentation: Presentation, sldieId: number): Presentation {
+    const presentationCopy = structuredClonePresentation(presentation);
+    presentationCopy.selectedSlide = sldieId;
+    return presentationCopy;
+}
+
 export function structuredClonePresentation(presentation: Presentation): Presentation {
     return JSON.parse(JSON.stringify(presentation));
 }

@@ -32,44 +32,45 @@ export function Toolbar(props: toolbarProps) {
 
     return (
         <div className="toolbar">
-            <div className="toolbar__system-option">
-                {isEditing ? (
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={handleTitleChange}
-                        onBlur={handleTitleBlur}
-                        onKeyDown={handleKeyPress}
-                        className="toolbar__title"
-                        autoFocus
-                    />
-                ) : (
-                    <Button
-                        onClick={handleTitleClick}
-                        className="toolbar__button toolbar__title"
-                    >
-                        {title || "Название презентации"}
-                    </Button>
-                )}
+            <div className="system-option">
                 <Button
                     onClick={() => console.log("File")}
-                    className="toolbar__button"
+                    className="button"
                 >
                     Файл
                 </Button>
 
                 <Button
                     onClick={() => console.log("Insert")}
-                    className="toolbar__button"
+                    className="button"
                 >
                     Вставка
                 </Button>
 
             </div>
 
+            {isEditing ? (
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={handleTitleChange}
+                        onBlur={handleTitleBlur}
+                        onKeyDown={handleKeyPress}
+                        className="title"
+                        autoFocus
+                    />
+                ) : (
+                    <Button
+                        onClick={handleTitleClick}
+                        className="button title"
+                    >
+                        {title || "Название презентации"}
+                    </Button>
+                )}
+
             <Button
                 onClick={() => console.log("Slide-Show")}
-                className="toolbar__button button__slide-show"
+                className="button slide-show"
             >
                 Слайд-шоу
             </Button>
