@@ -92,36 +92,46 @@ function generateTimestampId(): string {
 }
 
 export function selectSlide(presentation: Presentation, sldieId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.selectedSlide = sldieId;
-    return presentationCopy;
-}
-
-export function structuredClonePresentation(presentation: Presentation): Presentation {
-    return JSON.parse(JSON.stringify(presentation));
+    return {
+        ...presentation,
+        selectedSlide: sldieId
+    }
 }
 
 export function changePresentationName(presentation: Presentation, name: string): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.title = name;
-    return presentationCopy;
+    return {
+        ...presentation,
+        title: name
+    }
 }
 
 export function addSlide(presentation: Presentation, slide: Slide, idx: number, createId = true): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    if (createId) slide.id = generateTimestampId();
-    if (presentation.slides.length > 0) {
-        presentationCopy.slides.splice(idx, 0, slide);
+    const newSlide = createId ? { ...slide, id: generateTimestampId() } : { ...slide };
+    const newSlides = [...presentation.slides];
+    
+    if (newSlides.length > 0) {
+        newSlides.splice(idx, 0, newSlide);
+    } else {
+        newSlides.push(newSlide);
     }
-    return presentationCopy;
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function removeSlide(presentation: Presentation, idx: number): Presentation {
-    const presentationCopy= structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy.slides.splice(idx, 1);
+    if (presentation.slides.length === 0) {
+        return presentation;
     }
-    return presentationCopy;
+    
+    const newSlides = presentation.slides.filter((_, index) => index !== idx);
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 /*
 function rmSlide(editor: Editor):Editor {//selection
@@ -170,91 +180,256 @@ function moveSlide(editor: TextEncoderEncodeIntoResult, targetSlideIndex: number
 }*/
 
 export function replaceSlide(presentation: Presentation, slide: Slide, insertSpot: number): Presentation {
-    let presentationCopy = structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy = removeSlide(presentationCopy, Number(slide.id));
-        presentationCopy = addSlide(presentationCopy, slide, insertSpot, false);
-    } 
-    return presentationCopy;
+    if (presentation.slides.length === 0) {
+        return presentation;
+    }
+    
+    const newSlides = presentation.slides.filter(s => s.id !== slide.id);
+    newSlides.splice(insertSpot, 0, { ...slide });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
-
 export function addSlideObject(presentation: Presentation, slideObject: SlideObject, idx: number, slideId: number, createId = true): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    if (createId) slideObject.id = generateTimestampId();
-    presentationCopy.slides[slideId].slideObject.splice(idx, 0, slideObject);
-    return presentationCopy;
+    const newSlideObject = createId ? { ...slideObject, id: generateTimestampId() } : { ...slideObject };
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = [...slide.slideObject];
+            newSlideObjects.splice(idx, 0, newSlideObject);
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function removeSlideObject(presentation: Presentation, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject.splice(id, 1);
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.filter((_, objIndex) => objIndex !== id);
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function replaceSlideObject(presentation: Presentation, slideObj: SlideObject, slideId: number, insertSpot: number): Presentation {
-    let presentationCopy = structuredClonePresentation(presentation);
-    if (presentation.slides.length > 0) {
-        presentationCopy = removeSlideObject(presentationCopy, Number(slideObj.id), Number(slideId));
-        presentationCopy = addSlideObject(presentationCopy, slideObj, insertSpot, slideId, false);
-    } 
-    return presentationCopy;
+    if (presentation.slides.length === 0) {
+        return presentation;
+    }
+    
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            // Удаляем объект по ID и добавляем на новую позицию
+            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== slideObj.id);
+            newSlideObjects.splice(insertSpot, 0, { ...slideObj });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function changePlainTextContent(presentation: Presentation, content: string, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.content = content;
-    }
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.map((obj, objIndex) => {
+                if (objIndex === id && obj.type === 'plain_text') {
+                    return {
+                        ...obj,
+                        content: content
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function changePlainTextScale(presentation: Presentation, scale: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation); 
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.scale = scale;
-    }
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.map((obj, objIndex) => {
+                if (objIndex === id && obj.type === 'plain_text') {
+                    return {
+                        ...obj,
+                        scale: scale
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function changePlainTextFontFamily(presentation: Presentation, fontFamily: string, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    const slideObj = presentationCopy.slides[slideId].slideObject[id];
-    if (slideObj.type === 'plain_text') {
-        slideObj.fontFamily = fontFamily;
-    }
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.map((obj, objIndex) => {
+                if (objIndex === id && obj.type === 'plain_text') {
+                    return {
+                        ...obj,
+                        fontFamily: fontFamily
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function changeBackgroundToColor(presentation: Presentation, color: string, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].background = {
-        type: 'color',
-        color: color
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newBackground: Color = {
+                type: 'color',
+                color: color
+            };
+            return {
+                ...slide,
+                background: newBackground
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
     };
-    return presentationCopy;
 }
 
 export function changeBackgroundToImage(presentation: Presentation, imageSrc: string, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].background = {
-        type: "picture",
-        src: imageSrc
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newBackground: Picture = {
+                type: "picture",
+                src: imageSrc
+            };
+            return {
+                ...slide,
+                background: newBackground
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
     };
-    return presentationCopy;
 }
 
 export function changeSlideObjectScale(presentation: Presentation, height: number, width: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject[id].rect.height = height;
-    presentationCopy.slides[slideId].slideObject[id].rect.width = width;
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.map((obj, objIndex) => {
+                if (objIndex === id) {
+                    return {
+                        ...obj,
+                        rect: {
+                            ...obj.rect,
+                            height: height,
+                            width: width
+                        }
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }
 
 export function changeSlideObjectPosition(presentation: Presentation, x: number, y: number, id: number, slideId: number): Presentation {
-    const presentationCopy = structuredClonePresentation(presentation);
-    presentationCopy.slides[slideId].slideObject[id].rect.x = x;
-    presentationCopy.slides[slideId].slideObject[id].rect.y = y;
-    return presentationCopy;
+    const newSlides = presentation.slides.map((slide, index) => {
+        if (index === slideId) {
+            const newSlideObjects = slide.slideObject.map((obj, objIndex) => {
+                if (objIndex === id) {
+                    return {
+                        ...obj,
+                        rect: {
+                            ...obj.rect,
+                            x: x,
+                            y: y
+                        }
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+    
+    return {
+        ...presentation,
+        slides: newSlides
+    };
 }

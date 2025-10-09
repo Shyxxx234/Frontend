@@ -8,9 +8,10 @@ type SlideCollectionProps = {
 }
 
 export function SlideCollection(props: SlideCollectionProps) {
-    const handleSlideClick = (slideId: string) => {
-        console.log("Clicked slide ID:", slideId);
-        props.onSlideSelect(Number(slideId));
+    const handleSlideClick = (slideIndex: number, slideId: number) => {
+        console.log("Clicked slide index:", slideIndex)
+        console.log("Slide number: ", slideId)
+        props.onSlideSelect(slideIndex)
     }
 
     return (
@@ -21,8 +22,9 @@ export function SlideCollection(props: SlideCollectionProps) {
                         props.presentation.selectedSlide === Number(slide.id) ? styles.slideCollectionObjectSelected : ''
                     }`} 
                     key={slide.id}
-                    onClick={() => handleSlideClick(slide.id)}
+                    onClick={() => handleSlideClick(index, Number(slide.id))}
                 >
+                    
                     <div className={styles.slideContainer}>
                         <ShowSlide 
                             slide={slide} 
