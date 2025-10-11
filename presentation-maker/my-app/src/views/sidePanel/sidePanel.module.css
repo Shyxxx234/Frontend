@@ -1,8 +1,8 @@
 .sidePanel {
     position: absolute;
-    left: 94%;
+    left: 89%;
     top: 30%;
-    width: 5%;
+    width: 10%;
     height: 50%;
     background-color: #16111E;
     border-radius: 10px;
@@ -12,9 +12,9 @@
     padding: 10px 0;
 }
 
-.buttonAddSlide {
-    margin-top: 20px;
-    background: none;
+.button {
+    margin: 20px auto 0px;
+    background-color: #535BF2;
     border: none;
     cursor: pointer;
     padding: 0;
@@ -22,13 +22,24 @@
     justify-content: center;
     align-items: center;
     width: 80%;
+    transition: background-color 0.2s;
 }
 
-.buttonAddSlide:hover {
-    opacity: 0.8;
+.button:hover{
+    background-color: #3e44b6;
 }
+
 
 .addSlide {
     width: 100%;
     height: auto;
+}
+
+.section {
+    background-color: #535BF2;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    width: 80%;
+    height: auto;
+    padding-bottom: 10px;
 }

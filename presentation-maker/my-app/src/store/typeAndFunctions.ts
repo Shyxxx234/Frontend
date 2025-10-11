@@ -25,8 +25,8 @@ export type SlideCollection = {
 }
 
 export type ElementSelection = {
-    selectedSlide: number;
-    selectedObjects: Array<number>;
+    selectedSlide: string;
+    selectedObjects: Array<string>;
 }
 
 export type SlideObject = PlainText | Image;
@@ -37,7 +37,7 @@ export type PlainText = BaseSlideObject & {
     fontFamily: string;
     weight: number;
     scale: number;
-} 
+}
 
 export type Image = BaseSlideObject & Picture;
 
@@ -51,21 +51,12 @@ export type BaseSlideObject = {
     id: string;
 }
 
-export const blankSlide: Slide = {
-    background: {
-        type: "color",
-        color: "#FFFFFF",
-    },
-    slideObject: [],
-    id: ""
-}
-
 export const blankText: SlideObject = {
     type: "plain_text",
     content: "",
     fontFamily: "Arial",
     weight: 400,
-    scale: 1.0, 
+    scale: 1.0,
     rect: {
         x: 0,
         y: 0,
@@ -87,14 +78,16 @@ export const blankImage: SlideObject = {
     id: ""
 }
 
-function generateTimestampId(): string {
+export function generateTimestampId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
-export function selectSlide(presentation: Presentation, sldieId: number): Presentation {
+export function selectSlide(presentation: Presentation, [slideId]: [string]): Presentation {
+    console.log("selectSlide called with ID:", slideId)
     return {
         ...presentation,
-        selectedSlide: sldieId
+        selectedSlide: slideId,
+        selectedObjects: []
     }
 }
 
@@ -105,93 +98,68 @@ export function changePresentationName(presentation: Presentation, name: string)
     }
 }
 
-export function addSlide(presentation: Presentation, slide: Slide, idx: number, createId = true): Presentation {
-    const newSlide = createId ? { ...slide, id: generateTimestampId() } : { ...slide };
-    const newSlides = [...presentation.slides];
+export function addSlide(presentation: Presentation, [slide, idx]: [Slide, number]): Presentation {
+    console.log('Adding slide:', slide);
+    console.log('At index:', idx);
+
+    const newSlide: Slide = {
+        background: { ...slide.background }, 
+        slideObject: [...slide.slideObject], 
+        id: slide.id
+    };
     
-    if (newSlides.length > 0) {
-        newSlides.splice(idx, 0, newSlide);
-    } else {
-        newSlides.push(newSlide);
-    }
+    console.log('New slide structure:', newSlide);
+    
+    const newSlides = [...presentation.slides];
+    const safeIdx = Math.max(0, Math.min(idx, newSlides.length));
+    newSlides.splice(safeIdx, 0, newSlide);
     
     return {
         ...presentation,
-        slides: newSlides
+        slides: newSlides,
+        selectedSlide: newSlide.id 
+    };
+}
+export function createBlankSlide(): Slide {
+    return {
+        background: {
+            type: "color" as const,
+            color: "#FFFFFF",
+        },
+        slideObject: [],
+        id: generateTimestampId()
     };
 }
 
-export function removeSlide(presentation: Presentation, idx: number): Presentation {
+export function removeSlide(presentation: Presentation, [slideId]: [string]): Presentation {
     if (presentation.slides.length === 0) {
         return presentation;
     }
-    
-    const newSlides = presentation.slides.filter((_, index) => index !== idx);
-    
+
+    const newSlides = presentation.slides.filter(slide => slide.id !== slideId);
+
+
     return {
         ...presentation,
-        slides: newSlides
+        slides: newSlides,
+        selectedSlide: newSlides.length != 0 ? newSlides[0].id : ""
     };
 }
-/*
-function rmSlide(editor: Editor):Editor {//selection
-    return {
-        ...editor, 
-        presntation: {
-            ...editor.presentation,
-            slides: editor.presentation.slides.filter(slide => slide.id != editor.selection.selectedSlide)
-        }
-    }
-}
-
-function selecteSlideObject(editor: Editor, SelectedObjectId: number): Editor
-{
-    return {
-        ...editor,
-        selection: {
-            ...editor.selection,
-            selectedSlideObjectId,
-        }
-    }
-}
-
-function moveSlide(editor: TextEncoderEncodeIntoResult, targetSlideIndex: number): Editor
-{   
-    const movedSlide = editor.presentation.slide.find(slide => slide.id == editor.selection.selectedSlideId)
-    if(!moveSlide)
-    {
-        return editor
-    }
-
-    const newSlides: Array<Slide> = {
-        //copy before target slide
-        ...changeSlideObjectScale.slice(0, targetSlideIndex).filter(slide => slide.id != Selection.selectedSlideIndex),
-        movedSlide,
-        ..slides.slice(targetSlideINdex + 1).filter(slide => slide.id != Selection.selectedSlideIndex)
-        //copy after target slide
-    }
-    return {
-        ...editor,
-        presentation : {
-            ...editor.presentation,
-            slides: newSlides,
-        }
-    }
-}*/
 
 export function replaceSlide(presentation: Presentation, slide: Slide, insertSpot: number): Presentation {
     if (presentation.slides.length === 0) {
         return presentation;
     }
-    
+
     const newSlides = presentation.slides.filter(s => s.id !== slide.id);
     newSlides.splice(insertSpot, 0, { ...slide });
-    
+
     return {
         ...presentation,
         slides: newSlides
     };
 }
+
 export function addSlideObject(presentation: Presentation, slideObject: SlideObject, idx: number, slideId: number, createId = true): Presentation {
     const newSlideObject = createId ? { ...slideObject, id: generateTimestampId() } : { ...slideObject };
     const newSlides = presentation.slides.map((slide, index) => {
@@ -205,7 +173,7 @@ export function addSlideObject(presentation: Presentation, slideObject: SlideObj
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -223,7 +191,7 @@ export function removeSlideObject(presentation: Presentation, id: number, slideI
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -234,7 +202,7 @@ export function replaceSlideObject(presentation: Presentation, slideObj: SlideOb
     if (presentation.slides.length === 0) {
         return presentation;
     }
-    
+
     const newSlides = presentation.slides.map((slide, index) => {
         if (index === slideId) {
             // Удаляем объект по ID и добавляем на новую позицию
@@ -247,7 +215,7 @@ export function replaceSlideObject(presentation: Presentation, slideObj: SlideOb
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -273,7 +241,7 @@ export function changePlainTextContent(presentation: Presentation, content: stri
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -299,7 +267,7 @@ export function changePlainTextScale(presentation: Presentation, scale: number, 
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -325,7 +293,7 @@ export function changePlainTextFontFamily(presentation: Presentation, fontFamily
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -346,7 +314,7 @@ export function changeBackgroundToColor(presentation: Presentation, color: strin
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -367,7 +335,7 @@ export function changeBackgroundToImage(presentation: Presentation, imageSrc: st
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -397,7 +365,7 @@ export function changeSlideObjectScale(presentation: Presentation, height: numbe
         }
         return slide;
     });
-    
+
     return {
         ...presentation,
         slides: newSlides
@@ -427,7 +395,213 @@ export function changeSlideObjectPosition(presentation: Presentation, x: number,
         }
         return slide;
     });
-    
+
+    return {
+        ...presentation,
+        slides: newSlides
+    };
+}
+
+// Функции для добавления текста и картинок
+export function addTextObject(presentation: Presentation, [slideId]: [string]): Presentation {
+    const newTextObject: PlainText = {
+        type: "plain_text",
+        content: "Новый текст",
+        fontFamily: "Arial",
+        weight: 400,
+        scale: 1.0,
+        rect: {
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 50
+        },
+        id: generateTimestampId()
+    };
+
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            return {
+                ...slide,
+                slideObject: [...slide.slideObject, newTextObject]
+            };
+        }
+        return slide;
+    });
+
+    return {
+        ...presentation,
+        slides: newSlides,
+        selectedObjects: [newTextObject.id]
+    };
+}
+
+export function addImageObject(presentation: Presentation, [slideId, imageUrl]: [string, string]): Presentation {
+    const newImageObject: Image = {
+        type: "picture",
+        src: imageUrl || "https://via.placeholder.com/300x200",
+        rect: {
+            x: 100,
+            y: 100,
+            width: 300,
+            height: 200
+        },
+        id: generateTimestampId()
+    };
+
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            return {
+                ...slide,
+                slideObject: [...slide.slideObject, newImageObject]
+            };
+        }
+        return slide;
+    });
+
+    return {
+        ...presentation,
+        slides: newSlides,
+        selectedObjects: [newImageObject.id]
+    };
+}
+
+export function removeObject(presentation: Presentation, [objectId, slideId]: [string, string]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== objectId);
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+
+    const newSelectedObjects = presentation.selectedObjects.filter(id => id !== objectId);
+
+    return {
+        ...presentation,
+        slides: newSlides,
+        selectedObjects: newSelectedObjects
+    };
+}
+
+export function selectObject(presentation: Presentation, [objectId]: [string]): Presentation {
+    return {
+        ...presentation,
+        selectedObjects: objectId != "" ? [objectId] : []
+    };
+}
+
+export function updateTextContent(presentation: Presentation, [objectId, slideId, content]: [string, string, string]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            const newSlideObjects = slide.slideObject.map(obj => {
+                if (obj.id === objectId && obj.type === 'plain_text') {
+                    return {
+                        ...obj,
+                        content: content
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+
+    return {
+        ...presentation,
+        slides: newSlides
+    };
+}
+
+export function updateImageSource(presentation: Presentation, [objectId, slideId, src]: [string, string, string]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            const newSlideObjects = slide.slideObject.map(obj => {
+                if (obj.id === objectId && obj.type === 'picture') {
+                    return {
+                        ...obj,
+                        src: src
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+
+    return {
+        ...presentation,
+        slides: newSlides
+    };
+}
+
+// Функция для изменения размера объектов
+export function resizeObject(presentation: Presentation, [objectId, slideId, width, height]: [string, string, number, number]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            const newSlideObjects = slide.slideObject.map(obj => {
+                if (obj.id === objectId) {
+                    return {
+                        ...obj,
+                        rect: {
+                            ...obj.rect,
+                            width: width,
+                            height: height
+                        }
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+
+    return {
+        ...presentation,
+        slides: newSlides
+    };
+}
+
+
+export function moveObject(presentation: Presentation, [objectId, slideId, x, y]: [string, string, number, number]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        if (slide.id === slideId) {
+            const newSlideObjects = slide.slideObject.map(obj => {
+                if (obj.id === objectId) {
+                    return {
+                        ...obj,
+                        rect: {
+                            ...obj.rect,
+                            x: x,
+                            y: y
+                        }
+                    };
+                }
+                return obj;
+            });
+            return {
+                ...slide,
+                slideObject: newSlideObjects
+            };
+        }
+        return slide;
+    });
+
     return {
         ...presentation,
         slides: newSlides

@@ -1,3 +1,4 @@
+import { blankSlide } from '../views/sidePanel/sidePanel';
 import {type Presentation, 
     changeBackgroundToColor,
     changePresentationName,
@@ -5,8 +6,7 @@ import {type Presentation,
     replaceSlide, 
     removeSlide,
     addSlideObject,
-    changePlainTextContent,
-    blankSlide, 
+    changePlainTextContent, 
     blankText,
     changePlainTextFontFamily, 
     changePlainTextScale, 
@@ -29,7 +29,7 @@ export let presentationMin: Presentation = {
         }
     ],
     selectedObjects: [],
-    selectedSlide: 0
+    selectedSlide: "0"
 }
 
 export let presentationMax: Presentation = {
@@ -170,7 +170,7 @@ export let presentationMax: Presentation = {
         },
     ],
     selectedObjects: [],
-    selectedSlide: 0
+    selectedSlide: "0"
 }
 
 console.log("Change name: ", JSON.stringify(presentationMin, null, 2));
@@ -178,8 +178,8 @@ presentationMin = changePresentationName(presentationMin, "My");
 presentationMax = changePresentationName(presentationMax, "GG");
 
 console.log("Add slide:", JSON.stringify(presentationMin, null, 2))
-presentationMin = addSlide(presentationMin, blankSlide, presentationMin.slides.length);
-presentationMax = addSlide(presentationMax, blankSlide, presentationMax.slides.length);
+presentationMin = addSlide(presentationMin, blankSlide, true);
+presentationMax = addSlide(presentationMax, blankSlide, presentationMax.slides.length, true);
 
 console.log("Replace slide: ", JSON.stringify(presentationMin, null, 2))
 presentationMin = replaceSlide(presentationMin, presentationMin.slides[0], 1);

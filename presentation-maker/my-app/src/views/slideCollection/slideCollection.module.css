@@ -1,8 +1,8 @@
 .slideCollection {
     position: absolute;
     cursor: pointer;
-    left: 20px;
-    top: 120px;
+    left: 1%;
+    top: 15%;
     height: 80%;
     border-radius: 10px;
     width: 18%;
@@ -10,8 +10,13 @@
     flex-direction: column;
     overflow: auto;
     scrollbar-width: none;
-    display: flex;
     padding: 10px;
+}
+
+.slideCounter {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .slideContainer {
@@ -28,11 +33,10 @@
     position: absolute;
     border-radius: 5px;
     top: 70px;
-    left: 7px;
-    font-size: 15px;
+    left: 6px;
+    font-size: 16px;
     color: white;
     padding: 2px 4px;
-    margin-bottom: 100px;
     background-color: rgba(0, 0, 0, 0.7);
 }
 
@@ -43,9 +47,10 @@
 }
 
 .slideCollectionObjectSelected {
-    outline: 2px solid #535bf2;
+    outline: solid;
+    outline-color: #535BF2;
+    outline-width: 2px;
     border-radius: 12px;
-    padding: 2px;
 }
 
 .slide {
