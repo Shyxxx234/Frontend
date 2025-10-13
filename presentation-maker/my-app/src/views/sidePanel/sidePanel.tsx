@@ -6,7 +6,8 @@ import {
     removeSlide,
     addTextObject,
     addImageObject,
-    removeObject
+    removeObject,
+    changeBackgroundToColor
 } from "../../store/typeAndFunctions"
 import styles from "./sidePanel.module.css"
 
@@ -76,6 +77,10 @@ export function SidePanel() {
                 >
                     Удалить объект
                 </Button>
+                <input type="color"  onChange={(event) => {
+                    const target = event.target as HTMLInputElement
+                    dispatch(changeBackgroundToColor, [target.value, selectedSlideId])
+                }} />
             </div>
         </div>
     )

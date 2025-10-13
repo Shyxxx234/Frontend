@@ -1,3 +1,4 @@
+
 export type Presentation = SlideCollection & ElementSelection & {
     title: string;
 }
@@ -84,6 +85,8 @@ export function generateTimestampId(): string {
 
 export function selectSlide(presentation: Presentation, [slideId]: [string]): Presentation {
     console.log("selectSlide called with ID:", slideId)
+    const slideHTML = document.getElementById(presentation.selectedSlide)
+    slideHTML?.scrollIntoView({block:"center" , behavior:"smooth"})
     return {
         ...presentation,
         selectedSlide: slideId,
@@ -99,16 +102,11 @@ export function changePresentationName(presentation: Presentation, name: string)
 }
 
 export function addSlide(presentation: Presentation, [slide, idx]: [Slide, number]): Presentation {
-    console.log('Adding slide:', slide);
-    console.log('At index:', idx);
-
     const newSlide: Slide = {
         background: { ...slide.background }, 
         slideObject: [...slide.slideObject], 
         id: slide.id
     };
-    
-    console.log('New slide structure:', newSlide);
     
     const newSlides = [...presentation.slides];
     const safeIdx = Math.max(0, Math.min(idx, newSlides.length));
@@ -205,7 +203,6 @@ export function replaceSlideObject(presentation: Presentation, slideObj: SlideOb
 
     const newSlides = presentation.slides.map((slide, index) => {
         if (index === slideId) {
-            // Удаляем объект по ID и добавляем на новую позицию
             const newSlideObjects = slide.slideObject.filter(obj => obj.id !== slideObj.id);
             newSlideObjects.splice(insertSpot, 0, { ...slideObj });
             return {
@@ -300,9 +297,9 @@ export function changePlainTextFontFamily(presentation: Presentation, fontFamily
     };
 }
 
-export function changeBackgroundToColor(presentation: Presentation, color: string, slideId: number): Presentation {
-    const newSlides = presentation.slides.map((slide, index) => {
-        if (index === slideId) {
+export function changeBackgroundToColor(presentation: Presentation, [color, slideId]: [string, string]): Presentation {
+    const newSlides = presentation.slides.map((slide) => {
+        if (slide.id === slideId) {
             const newBackground: Color = {
                 type: 'color',
                 color: color

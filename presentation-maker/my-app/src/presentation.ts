@@ -354,12 +354,7 @@ function setPresentation(newPresentation) {
 }
 
 export function dispatch(modifyFn, payload) {
-    console.log('Dispatching:', modifyFn.name, payload)
-    console.log('Current presentation slides:', presentation.slides.length)
-    
     const newPresentation = modifyFn(presentation, payload)
-    
-    console.log('New presentation slides:', newPresentation.slides.length)
     
     setPresentation(newPresentation)
     if(presentationChangeHandler) {

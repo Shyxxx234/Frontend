@@ -26,6 +26,7 @@ export function SlideCollection(props: SlideCollectionProps) {
                             props.presentation.selectedSlide === slide.id ? styles.slideCollectionObjectSelected : ''
                         }`} 
                         key={slide.id}
+                        id={slide.id}
                         onClick={() => handleSlideClick(slide.id)}
                     >
                         <div className={styles.slideContainer}>

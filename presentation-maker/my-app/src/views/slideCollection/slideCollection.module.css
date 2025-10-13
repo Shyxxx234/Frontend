@@ -46,13 +46,14 @@
     margin-bottom: 20px;
 }
 
+.slide {
+    border-radius: 50px;
+    top: 18px;
+}
+
 .slideCollectionObjectSelected {
     outline: solid;
     outline-color: #535BF2;
     outline-width: 2px;
     border-radius: 12px;
-}
-
-.slide {
-    border-radius: 50px;
 }
