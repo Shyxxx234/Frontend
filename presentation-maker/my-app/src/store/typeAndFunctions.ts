@@ -85,7 +85,7 @@ export function generateTimestampId(): string {
 
 export function selectSlide(presentation: Presentation, [slideId]: [string]): Presentation {
     console.log("selectSlide called with ID:", slideId)
-    const slideHTML = document.getElementById(presentation.selectedSlide)
+    const slideHTML = document.getElementById(slideId)
     slideHTML?.scrollIntoView({block:"center" , behavior:"smooth"})
     return {
         ...presentation,
@@ -121,7 +121,7 @@ export function addSlide(presentation: Presentation, [slide, idx]: [Slide, numbe
 export function createBlankSlide(): Slide {
     return {
         background: {
-            type: "color" as const,
+            type: "color",
             color: "#FFFFFF",
         },
         slideObject: [],
@@ -488,119 +488,5 @@ export function selectObject(presentation: Presentation, [objectId]: [string]): 
     return {
         ...presentation,
         selectedObjects: objectId != "" ? [objectId] : []
-    };
-}
-
-export function updateTextContent(presentation: Presentation, [objectId, slideId, content]: [string, string, string]): Presentation {
-    const newSlides = presentation.slides.map(slide => {
-        if (slide.id === slideId) {
-            const newSlideObjects = slide.slideObject.map(obj => {
-                if (obj.id === objectId && obj.type === 'plain_text') {
-                    return {
-                        ...obj,
-                        content: content
-                    };
-                }
-                return obj;
-            });
-            return {
-                ...slide,
-                slideObject: newSlideObjects
-            };
-        }
-        return slide;
-    });
-
-    return {
-        ...presentation,
-        slides: newSlides
-    };
-}
-
-export function updateImageSource(presentation: Presentation, [objectId, slideId, src]: [string, string, string]): Presentation {
-    const newSlides = presentation.slides.map(slide => {
-        if (slide.id === slideId) {
-            const newSlideObjects = slide.slideObject.map(obj => {
-                if (obj.id === objectId && obj.type === 'picture') {
-                    return {
-                        ...obj,
-                        src: src
-                    };
-                }
-                return obj;
-            });
-            return {
-                ...slide,
-                slideObject: newSlideObjects
-            };
-        }
-        return slide;
-    });
-
-    return {
-        ...presentation,
-        slides: newSlides
-    };
-}
-
-// Функция для изменения размера объектов
-export function resizeObject(presentation: Presentation, [objectId, slideId, width, height]: [string, string, number, number]): Presentation {
-    const newSlides = presentation.slides.map(slide => {
-        if (slide.id === slideId) {
-            const newSlideObjects = slide.slideObject.map(obj => {
-                if (obj.id === objectId) {
-                    return {
-                        ...obj,
-                        rect: {
-                            ...obj.rect,
-                            width: width,
-                            height: height
-                        }
-                    };
-                }
-                return obj;
-            });
-            return {
-                ...slide,
-                slideObject: newSlideObjects
-            };
-        }
-        return slide;
-    });
-
-    return {
-        ...presentation,
-        slides: newSlides
-    };
-}
-
-
-export function moveObject(presentation: Presentation, [objectId, slideId, x, y]: [string, string, number, number]): Presentation {
-    const newSlides = presentation.slides.map(slide => {
-        if (slide.id === slideId) {
-            const newSlideObjects = slide.slideObject.map(obj => {
-                if (obj.id === objectId) {
-                    return {
-                        ...obj,
-                        rect: {
-                            ...obj.rect,
-                            x: x,
-                            y: y
-                        }
-                    };
-                }
-                return obj;
-            });
-            return {
-                ...slide,
-                slideObject: newSlideObjects
-            };
-        }
-        return slide;
-    });
-
-    return {
-        ...presentation,
-        slides: newSlides
     };
 }

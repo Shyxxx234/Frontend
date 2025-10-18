@@ -1,4 +1,4 @@
-import { blankSlide } from '../views/sidePanel/sidePanel';
+import { blankSlide } from '../views/SidePanel/sidePanel';
 import {type Presentation, 
     changeBackgroundToColor,
     changePresentationName,

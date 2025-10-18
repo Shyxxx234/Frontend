@@ -1,4 +1,6 @@
-export let presentationMin: Presentation = {
+import type { Presentation } from "./store/typeAndFunctions"
+
+export const presentationMin: Presentation = {
     title: "My presentation",
     slides: [
         {
@@ -147,8 +149,8 @@ export let presentationMin: Presentation = {
         },
         {
             background: {
-                type: "color",
-                color: "#923333ff"
+                type: "picture",
+                src: "https://preview.redd.it/vo9vm1fcqrp71.jpg?auto=webp&s=cb4016edf50a37cf06dbe9e975ed9410b253bff0"
             },
             slideObject: [
                 {
@@ -178,17 +180,6 @@ export let presentationMin: Presentation = {
                         height: 50
                     },
                     id: "13"
-                },
-                {
-                    type: "picture",
-                    src: "https://shapka-youtube.ru/wp-content/uploads/2024/08/kartinka-dlya-avatarki-siluety-muzhchin-risunok-odnogo-muzhskogo-silueta.jpg",
-                    rect: {
-                        x: 0,
-                        y: 0,
-                        width: 500,
-                        height: 500
-                    },
-                    id: "14",
                 }
             ],
             id: "15"
@@ -349,11 +340,11 @@ export function getPresentation() {
     return presentation
 }
 
-function setPresentation(newPresentation) {
+function setPresentation(newPresentation: Presentation) {
     presentation = newPresentation
 }
 
-export function dispatch(modifyFn, payload) {
+export function dispatch(modifyFn, payload: object) {
     const newPresentation = modifyFn(presentation, payload)
     
     setPresentation(newPresentation)

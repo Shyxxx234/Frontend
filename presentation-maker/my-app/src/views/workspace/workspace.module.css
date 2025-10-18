@@ -1,9 +1,11 @@
 .workspaceContainer {
+    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    margin-left: 6%;
+    left: 25%;
+    top: 20%
 }
 
 .workspaceNavigation {

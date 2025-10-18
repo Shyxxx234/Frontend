@@ -1,5 +1,5 @@
-import { Button } from "../../common/button"
-import { dispatch, getPresentation } from "../../presentation"
+import { Button } from "../../common/Button"
+import { dispatch } from "../../presentation"
 import { 
     addSlide, 
     createBlankSlide, 
@@ -7,53 +7,58 @@ import {
     addTextObject,
     addImageObject,
     removeObject,
-    changeBackgroundToColor
+    changeBackgroundToColor,
+    type Slide
 } from "../../store/typeAndFunctions"
 import styles from "./sidePanel.module.css"
 
-export function SidePanel() {
-    const currentPresentation = getPresentation();
-    const selectedSlideId = currentPresentation.selectedSlide;
+type SidePanelProps = {
+    slides: Array<Slide>,
+    selectedSlideId: string,
+    selectedObjects: Array<string>
+}
+
+export function SidePanel(props: SidePanelProps) {
 
     const handleAddSlide = () => {
         dispatch(addSlide, [
             createBlankSlide(),
-            currentPresentation.slides.length,
+            props.slides.length,
         ])
     }
 
     const handleRemoveSlide = () => {
-        if (selectedSlideId) {
-            dispatch(removeSlide, [selectedSlideId])
+        if (props.selectedSlideId) {
+            dispatch(removeSlide, [props.selectedSlideId])
         }
     }
 
     const handleAddText = () => {
-        if (selectedSlideId) {
-            dispatch(addTextObject, [selectedSlideId])
+        if (props.selectedSlideId) {
+            dispatch(addTextObject, [props.selectedSlideId])
         }
     }
 
     const handleAddImage = () => {
-        if (selectedSlideId) {
+        if (props.selectedSlideId) {
             const imageUrl = prompt("Введите URL изображения:", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWaFnicAytoRPP_Esi8F-TtEqcTnxdIh_sqA&s");
             if (imageUrl) {
-                dispatch(addImageObject, [selectedSlideId, imageUrl])
+                dispatch(addImageObject, [props.selectedSlideId, imageUrl])
             }
         }
     }
 
     const handleRemoveObject = () => {
-        if (selectedSlideId && currentPresentation.selectedObjects.length > 0) {
-            const objectId = currentPresentation.selectedObjects[0];
-            dispatch(removeObject, [objectId, selectedSlideId])
+        if (props.selectedSlideId && props.selectedObjects.length > 0) {
+            const objectId = props.selectedObjects[0];
+            dispatch(removeObject, [objectId, props.selectedSlideId])
         }
     }
 
     return (
         <div className={styles.sidePanel}>
             <div className={styles.section}>
-                <h3>Слайды</h3>
+                <h3 className={styles.text}>Слайды</h3>
                 <Button className={styles.button} onClick={handleAddSlide}>
                     + Добавить слайд
                 </Button>
@@ -63,7 +68,7 @@ export function SidePanel() {
             </div>
 
             <div className={styles.section}>
-                <h3>Объекты</h3>
+                <h3 className={styles.text}>Объекты</h3>
                 <Button className={styles.button} onClick={handleAddText}>
                     Добавить текст
                 </Button>
@@ -73,13 +78,13 @@ export function SidePanel() {
                 <Button 
                     className={styles.button} 
                     onClick={handleRemoveObject}
-                    disabled={currentPresentation.selectedObjects.length === 0}
+                    disabled={props.selectedObjects.length === 0}
                 >
                     Удалить объект
                 </Button>
                 <input type="color"  onChange={(event) => {
                     const target = event.target as HTMLInputElement
-                    dispatch(changeBackgroundToColor, [target.value, selectedSlideId])
+                    dispatch(changeBackgroundToColor, [target.value, props.selectedSlideId])
                 }} />
             </div>
         </div>

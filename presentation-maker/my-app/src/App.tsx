@@ -1,9 +1,9 @@
-import './App.css'
-import { Toolbar } from './views/toolbar/toolbar'
+import styles from './App.module.css'
+import { Toolbar } from './views/Toolbar/Toolbar'
 import { selectSlide, type Presentation } from './store/typeAndFunctions'
-import { Workspace } from './views/workspace/workspace'
-import { SlideCollection } from './views/slideCollection/slideCollection'
-import { SidePanel } from './views/sidePanel/sidePanel'
+import { Workspace } from './views/Workspace/Workspace'
+import { SlideCollection } from './views/SlideCollection/SlideCollection'
+import { SidePanel } from './views/SidePanel/SidePanel'
 import { dispatch } from './presentation'
 import { useEffect } from 'react'
 
@@ -16,6 +16,10 @@ function App(props: AppProps) {
         dispatch(selectSlide, [slideId])
     }
 
+    const slideIndex = props.presentation.slides.findIndex(
+        slide => slide.id === props.presentation.selectedSlide
+    )
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
 
@@ -24,11 +28,9 @@ function App(props: AppProps) {
             )
 
             if (event.key === 'ArrowLeft' && currentSlideIndex > 0) {
-                event.preventDefault()
                 const prevSlide = props.presentation.slides[currentSlideIndex - 1]
                 dispatch(selectSlide, [prevSlide.id])
             } else if (event.key === 'ArrowRight' && currentSlideIndex < props.presentation.slides.length - 1) {
-                event.preventDefault()
                 const nextSlide = props.presentation.slides[currentSlideIndex + 1]
                 dispatch(selectSlide, [nextSlide.id])
             }
@@ -41,15 +43,24 @@ function App(props: AppProps) {
     }, [props.presentation])
 
     return (
-        <div className="app">
-            <Toolbar presentation={props.presentation} />
-            <div className="app-content">
+        <div className={styles.app}>
+            <Toolbar title={props.presentation.title} />
+            <div>
                 <SlideCollection 
-                    presentation={props.presentation} 
+                    slideCollection={props.presentation.slides}
+                    selectedSlide={props.presentation.selectedSlide}
                     onSlideSelect={handleSlideSelect}
                 />
-                <Workspace presentation={props.presentation} />
-                <SidePanel />
+                <Workspace 
+                    slides={props.presentation.slides} 
+                    slideIndex={slideIndex}
+                    selectedObjects={props.presentation.selectedObjects}
+                />
+                <SidePanel 
+                    slides={props.presentation.slides}
+                    selectedSlideId={props.presentation.selectedSlide}
+                    selectedObjects={props.presentation.selectedObjects}
+                />
             </div>
         </div>
     )

@@ -1,15 +1,15 @@
 import { useState } from "react";
-import './toolbar.css'
-import type { Presentation } from "../../store/typeAndFunctions";
-import { Button } from "../../common/button";
+import './toolbar.module.css'
+import { Button } from "../../common/Button";
+import styles from "./toolbar.module.css"
 
 type toolbarProps = {
-    presentation: Presentation
+    title: string,
 }
 
 export function Toolbar(props: toolbarProps) {
     const [isEditing, setIsEditing] = useState(false);
-    const [title, setTitle] = useState(props.presentation.title);
+    const [title, setTitle] = useState(props.title);
 
     const handleTitleClick = () => {
         setIsEditing(true);
@@ -31,18 +31,18 @@ export function Toolbar(props: toolbarProps) {
     };
 
     return (
-        <div className="toolbar">
-            <div className="system-option">
+        <div className={styles.toolbar}>
+            <div>
                 <Button
                     onClick={() => console.log("File")}
-                    className="button"
+                    className={styles.button}
                 >
                     Файл
                 </Button>
 
                 <Button
                     onClick={() => console.log("Insert")}
-                    className="button"
+                    className={styles.button}
                 >
                     Вставка
                 </Button>
@@ -56,13 +56,13 @@ export function Toolbar(props: toolbarProps) {
                         onChange={handleTitleChange}
                         onBlur={handleTitleBlur}
                         onKeyDown={handleKeyPress}
-                        className="title"
+                        className={styles.title}
                         autoFocus
                     />
                 ) : (
                     <Button
                         onClick={handleTitleClick}
-                        className="button title"
+                        className={`${styles.button} ${styles.title}`}
                     >
                         {title || "Название презентации"}
                     </Button>
@@ -70,7 +70,7 @@ export function Toolbar(props: toolbarProps) {
 
             <Button
                 onClick={() => console.log("Slide-Show")}
-                className="button slide-show"
+                className={`${styles.button} ${styles.slide_show}`}
             >
                 Слайд-шоу
             </Button>

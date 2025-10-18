@@ -1,10 +1,11 @@
-import { ShowSlide } from "../../common/showSlide"
-import { type Presentation } from "../../store/typeAndFunctions"
+import { ShowSlide } from "../../common/ShowSlide"
+import { type Slide } from "../../store/typeAndFunctions"
 
 import styles from "./slideCollection.module.css"
 
 type SlideCollectionProps = {
-    presentation: Presentation,
+    slideCollection: Array<Slide>,
+    selectedSlide: string,
     onSlideSelect: (slideId: string) => void;
 }
 
@@ -20,10 +21,10 @@ export function SlideCollection(props: SlideCollectionProps) {
         <div className={styles.slideCollection}>
             
             <div>
-                {props.presentation.slides.map((slide, index) => (
+                {props.slideCollection.map((slide, index) => (
                     <div 
                         className={`${styles.slideCollectionObject} ${
-                            props.presentation.selectedSlide === slide.id ? styles.slideCollectionObjectSelected : ''
+                            props.selectedSlide === slide.id ? styles.slideCollectionObjectSelected : ''
                         }`} 
                         key={slide.id}
                         id={slide.id}

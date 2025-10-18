@@ -34,13 +34,13 @@ export function ShowSlide(props: ShowSlideProps) {
             onClick={handleSlideClick}
             style={{
                 position: 'relative',
-                width: '100%',
+                width: '100wv',
                 height: '100%',
                 backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
                 backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
                 backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                backgroundSize: 'cover'
             }}
         >
             {slideObjects.map(obj => {

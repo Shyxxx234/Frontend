@@ -1,84 +1,74 @@
-import { ShowSlide } from "../../common/showSlide"
-import type { Presentation, Slide } from "../../store/typeAndFunctions"
+import { ShowSlide } from "../../common/ShowSlide"
+import type { Slide } from "../../store/typeAndFunctions"
 import { dispatch } from "../../presentation"
 import { selectSlide } from "../../store/typeAndFunctions"
 import styles from "./workspace.module.css"
 
 type WorkspaceProps = {
-    presentation: Presentation,
+    slides: Array<Slide>,
+    slideIndex: number,
+    selectedObjects: Array<string>
 }
 
 export function Workspace(props: WorkspaceProps) {
-    const slideIndex = props.presentation.slides.findIndex(
-        slideItem => slideItem.id === props.presentation.selectedSlide
-    )
-    
-    const slide = props.presentation.slides[slideIndex]
+    const slide = props.slides[props.slideIndex]
 
-    
-
-    const handleSlideObjectClick = (slide: Slide) => {   
-        if(slide.background.type === 'color') console.log("Slide color: ", slide.background.color)
+    const handleSlideObjectClick = (slide: Slide) => {
+        if (slide.background.type === 'color') console.log("Slide color: ", slide.background.color)
     }
 
     const goToPreviousSlide = () => {
-        if (slideIndex > 0) {
-            const prevSlide = props.presentation.slides[slideIndex - 1]
+        if (props.slideIndex > 0) {
+            const prevSlide = props.slides[props.slideIndex - 1]
             dispatch(selectSlide, [prevSlide.id])
         }
     }
 
     const goToNextSlide = () => {
-        if (slideIndex < props.presentation.slides.length - 1) {
-            const nextSlide = props.presentation.slides[slideIndex + 1]
+        if (props.slideIndex < props.slides.length - 1) {
+            const nextSlide = props.slides[props.slideIndex + 1]
             dispatch(selectSlide, [nextSlide.id])
         }
     }
-    
+
     return (
         <div className={styles.workspaceContainer}>
             <div className={styles.workspaceNavigation}>
-                <button 
+                <button
                     className={styles.navButton}
                     onClick={goToPreviousSlide}
-                    disabled={slideIndex <= 0}
+                    disabled={props.slideIndex <= 0}
                 >
                     ◀ Предыдущий
                 </button>
                 <div className={styles.slideInfo}>
-                    Слайд {slideIndex + 1} из {props.presentation.slides.length}
+                    Слайд {props.slideIndex + 1} из {props.slides.length}
                 </div>
-                <button 
+                <button
                     className={styles.navButton}
                     onClick={goToNextSlide}
-                    disabled={slideIndex >= props.presentation.slides.length - 1}
+                    disabled={props.slideIndex >= props.slides.length - 1}
                 >
                     Следующий ▶
                 </button>
             </div>
 
-            <div 
+            <div
                 className={styles.workspace}
-                style={{
-                    backgroundColor: slide.background.type === 'color' ? slide.background.color : 'none',
-                    backgroundImage: slide.background.type === 'picture' ? `url(${slide.background.src})` : 'none',
-                    backgroundSize: 'contain'
-                }}
                 onClick={() => slide && handleSlideObjectClick(slide)}
             >
                 {slide ? (
-                    <ShowSlide 
+                    <ShowSlide
                         slide={slide}
                         className={styles.slide}
-                        disableObjectClicks={false} 
+                        disableObjectClicks={false}
                         slideId={slide.id}
-                        objSelection={props.presentation.selectedObjects}
+                        objSelection={props.selectedObjects}
                     />
                 ) : (
                     <div className={styles.noSlide}>Нет слайдов</div>
                 )}
             </div>
-
         </div>
     )
 }
