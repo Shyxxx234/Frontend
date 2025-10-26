@@ -1,94 +1,224 @@
-import type { Slide } from "../store/typeAndFunctions";
-import { dispatch } from "../presentation";
-import { selectObject } from "../store/typeAndFunctions";
+import type { Slide } from "../store/typeAndFunctions"
+import { dispatch } from "../presentation"
+import { selectObject, moveObject, resizeObject, calculateResize } from "../store/typeAndFunctions"
+import React, { useState, useRef } from "react"
+import styles from "./ShowSlide.module.css"
 
 type ShowSlideProps = {
-    slide: Slide;
-    disableObjectClicks: boolean;
-    className?: string;
-    isSelected?: boolean;
-    slideId: string;
-    objSelection?: Array<string>;
+    slide: Slide
+    disableObjectClicks: boolean
+    className?: string
+    slideId: string
+    objSelection?: Array<string>
 }
 
+
+type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
+
 export function ShowSlide(props: ShowSlideProps) {
-    const handleObjectClick = (event: React.MouseEvent, objId: string) => {
-        if (props.disableObjectClicks) return;
-        event.stopPropagation();
-        
-        dispatch(selectObject, [objId]);
-        console.log("Clicked object ID:", objId);
-    };
+    const [resizingId, setResizingId] = useState<string | null>(null)
+    const slideRef = useRef<HTMLDivElement>(null)
 
-    const handleSlideClick = () => {
-        if (props.disableObjectClicks) return;
-        dispatch(selectObject, [""]);
-    };
+    const handleObjectClick = (e: React.MouseEvent, objId: string) => {
+        if (props.disableObjectClicks || resizingId) return
 
-    const objSelection = props.objSelection || [];
-    const slideObjects = props.slide.slideObject || [];
+        const currentSelection = props.objSelection || []
+        let newSelection: string[]
+        if (e.ctrlKey || e.metaKey) {
+            newSelection = [...currentSelection, objId]
+        } else {
+            newSelection = [objId]
+        }
+
+        dispatch(selectObject, newSelection)
+    }
+
+    const handleSlideClick = (e: React.MouseEvent) => {
+        if (props.disableObjectClicks || resizingId) return
+        if (e.target === e.currentTarget) {
+            dispatch(selectObject, [])
+        }
+    }
+
+    const startDrag = (e: React.MouseEvent) => {
+        if (props.disableObjectClicks) return
+        e.stopPropagation()
+
+        const slideRect = slideRef.current?.getBoundingClientRect()
+        if (!slideRect) return
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.clientX - e.clientX
+            const deltaY = moveEvent.clientY - e.clientY
+
+            const selectedObjects = props.objSelection || []
+            selectedObjects.forEach(selectedObjId => {
+                const selectedObj = props.slide.slideObject?.find(obj => obj.id === selectedObjId)
+                if (selectedObj) {
+                    const newX = Math.min(Math.max(0, selectedObj.rect.x + deltaX), slideRect.width - selectedObj.rect.width)
+                    const newY = Math.min(Math.max(0, selectedObj.rect.y + deltaY), slideRect.height - selectedObj.rect.height)
+                    dispatch(moveObject, [selectedObjId, newX, newY])
+                }
+            })
+        }
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', onMouseUp)
+        }
+
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
+    }
+
+    const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
+        if (props.disableObjectClicks) return
+        e.stopPropagation()
+
+        const slideRect = slideRef.current?.getBoundingClientRect()
+        if (!slideRect) return
+
+        const obj = props.slide.slideObject?.find(obj => obj.id === objId)
+        if (!obj) return
+
+        const startMouseX = e.clientX
+        const startMouseY = e.clientY
+        const startLeft = obj.rect.x
+        const startTop = obj.rect.y
+        const startWidth = obj.rect.width
+        const startHeight = obj.rect.height
+
+        setResizingId(objId)
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.clientX - startMouseX
+            const deltaY = moveEvent.clientY - startMouseY
+
+            const MIN_SIZE = 20
+
+            const { newX, newY, newWidth, newHeight } = calculateResize(
+                direction,
+                deltaX,
+                deltaY,
+                startLeft,
+                startTop,
+                startWidth,
+                startHeight,
+                {
+                    minX: 0,
+                    minY: 0,
+                    maxWidth: slideRect.width,
+                    maxHeight: slideRect.height,
+                    minSize: MIN_SIZE
+                }
+            )
+
+            dispatch(resizeObject, [objId, newX, newY, newWidth, newHeight])
+        }
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', onMouseUp)
+            setResizingId(null)
+        }
+
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', onMouseUp)
+    }
+
+    const ResizeHandle = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
+        const handleClassNames = {
+            'nw': `${styles.resizeHandle} ${styles.resizeHandleNw}`,
+            'ne': `${styles.resizeHandle} ${styles.resizeHandleNe}`,
+            'sw': `${styles.resizeHandle} ${styles.resizeHandleSw}`,
+            'se': `${styles.resizeHandle} ${styles.resizeHandleSe}`,
+            'n': `${styles.resizeHandle} ${styles.resizeHandleN}`,
+            's': `${styles.resizeHandle} ${styles.resizeHandleS}`,
+            'w': `${styles.resizeHandle} ${styles.resizeHandleW}`,
+            'e': `${styles.resizeHandle} ${styles.resizeHandleE}`,
+        }
+
+        return (
+            <div
+                onMouseDown={(e) => startResize(e, objId, direction)}
+                className={handleClassNames[direction]}
+            />
+        )
+    }
+
+    const objSelection = props.objSelection || []
+    const slideObjects = props.slide.slideObject || []
 
     return (
         <div
-            className={props.className}
+            ref={slideRef}
+            className={`${styles.slide} ${props.className || ''}`}
             onClick={handleSlideClick}
             style={{
-                position: 'relative',
-                width: '100wv',
-                height: '100%',
                 backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
                 backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
-                backgroundPosition: 'center',
-                cursor: 'pointer',
-                backgroundSize: 'cover'
             }}
         >
             {slideObjects.map(obj => {
-                if (!obj) return null;
-                
-                const isSelected = objSelection.includes(obj.id);
-                
+                const isSelected = objSelection.includes(obj.id)
+                const isMultipleSelected = isSelected && objSelection.length > 1
+
+                const objectClasses = [
+                    styles.slideObject,
+                    isSelected ? styles.selected : '',
+                    isMultipleSelected ? styles.multipleSelected : ''
+                ].join(' ')
+
                 return (
                     <div
                         key={obj.id}
-                        onClick={(event) => handleObjectClick(event, obj.id)}
+                        className={objectClasses}
+                        onClick={(e) => handleObjectClick(e, obj.id)}
+                        onMouseDown={startDrag}
                         style={{
-                            position: 'absolute',
-                            left: obj.rect.x || 0,
-                            top: obj.rect.y || 0,
-                            width: obj.rect.width || 100,
-                            height: obj.rect.height || 100,
-                            cursor: 'pointer',
-                            outline: isSelected ? '1px solid #FFFFFF' : 'none'
+                            left: obj.rect.x,
+                            top: obj.rect.y,
+                            width: obj.rect.width,
+                            height: obj.rect.height,
                         }}
                     >
                         {obj.type === 'plain_text' && (
                             <div
+                                className={styles.textObject}
                                 style={{
-                                    fontFamily: obj.fontFamily || 'Arial',
-                                    fontWeight: obj.weight || 400,
-                                    fontSize: `${obj.scale || 1}em`,
-                                    width: '100%',
-                                    height: '100%',
+                                    fontFamily: obj.fontFamily,
+                                    fontWeight: obj.weight,
+                                    fontSize: `${obj.scale}em`,
                                 }}
+                                contentEditable={false}
                             >
-                                {obj.content || ''}
+                                {obj.content}
                             </div>
                         )}
                         {obj.type === 'picture' && (
                             <img
-                                src={obj.src || ''}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'contain',
-                                }}
+                                src={obj.src}
+                                className={styles.imageObject}
                                 alt=""
+                                draggable={false}
                             />
                         )}
+
+                        {isSelected && !props.disableObjectClicks && objSelection.length === 1 && (
+                            <>
+                                <ResizeHandle direction="nw" objId={obj.id} />
+                                <ResizeHandle direction="ne" objId={obj.id} />
+                                <ResizeHandle direction="sw" objId={obj.id} />
+                                <ResizeHandle direction="se" objId={obj.id} />
+                                <ResizeHandle direction="n" objId={obj.id} />
+                                <ResizeHandle direction="s" objId={obj.id} />
+                                <ResizeHandle direction="w" objId={obj.id} />
+                                <ResizeHandle direction="e" objId={obj.id} />
+                            </>
+                        )}
                     </div>
-                );
+                )
             })}
         </div>
-    );
+    )
 }

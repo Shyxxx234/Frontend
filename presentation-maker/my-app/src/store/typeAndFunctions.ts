@@ -1,55 +1,55 @@
 
 export type Presentation = SlideCollection & ElementSelection & {
-    title: string;
+    title: string
 }
 
 export type Slide = {
-    background: Background;
-    slideObject: Array<SlideObject>;
-    id: string;
+    background: Background
+    slideObject: Array<SlideObject>
+    id: string
 }
 
-export type Background = Color | Picture;
+export type Background = Color | Picture
 
 export type Color = {
-    type: 'color';
-    color: string;
+    type: 'color'
+    color: string
 }
 
 export type Picture = {
-    type: 'picture';
-    src: string;
+    type: 'picture'
+    src: string
 }
 
 export type SlideCollection = {
-    slides: Array<Slide>;
+    slides: Array<Slide>
 }
 
 export type ElementSelection = {
-    selectedSlide: string;
-    selectedObjects: Array<string>;
+    selectedSlide: string
+    selectedObjects: Array<string>
 }
 
-export type SlideObject = PlainText | Image;
+export type SlideObject = PlainText | Image
 
 export type PlainText = BaseSlideObject & {
-    type: 'plain_text';
-    content: string;
-    fontFamily: string;
-    weight: number;
-    scale: number;
+    type: 'plain_text'
+    content: string
+    fontFamily: string
+    weight: number
+    scale: number
 }
 
-export type Image = BaseSlideObject & Picture;
+export type Image = BaseSlideObject & Picture
 
 export type BaseSlideObject = {
     rect: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
-    id: string;
+        x: number
+        y: number
+        width: number
+        height: number
+    }
+    id: string
 }
 
 export const blankText: SlideObject = {
@@ -80,11 +80,10 @@ export const blankImage: SlideObject = {
 }
 
 export function generateTimestampId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+    return Date.now().toString(36) + Math.random().toString(36).substring(2)
 }
 
 export function selectSlide(presentation: Presentation, [slideId]: [string]): Presentation {
-    console.log("selectSlide called with ID:", slideId)
     const slideHTML = document.getElementById(slideId)
     slideHTML?.scrollIntoView({block:"center" , behavior:"smooth"})
     return {
@@ -106,17 +105,17 @@ export function addSlide(presentation: Presentation, [slide, idx]: [Slide, numbe
         background: { ...slide.background }, 
         slideObject: [...slide.slideObject], 
         id: slide.id
-    };
+    }
     
-    const newSlides = [...presentation.slides];
-    const safeIdx = Math.max(0, Math.min(idx, newSlides.length));
-    newSlides.splice(safeIdx, 0, newSlide);
+    const newSlides = [...presentation.slides]
+    const safeIdx = Math.max(0, Math.min(idx, newSlides.length))
+    newSlides.splice(safeIdx, 0, newSlide)
     
     return {
         ...presentation,
         slides: newSlides,
         selectedSlide: newSlide.id 
-    };
+    }
 }
 export function createBlankSlide(): Slide {
     return {
@@ -126,97 +125,104 @@ export function createBlankSlide(): Slide {
         },
         slideObject: [],
         id: generateTimestampId()
-    };
+    }
 }
 
 export function removeSlide(presentation: Presentation, [slideId]: [string]): Presentation {
     if (presentation.slides.length === 0) {
-        return presentation;
+        return presentation
     }
 
-    const newSlides = presentation.slides.filter(slide => slide.id !== slideId);
+    const newSlides = presentation.slides.filter(slide => slide.id !== slideId)
 
 
     return {
         ...presentation,
         slides: newSlides,
         selectedSlide: newSlides.length != 0 ? newSlides[0].id : ""
-    };
+    }
 }
 
-export function replaceSlide(presentation: Presentation, slide: Slide, insertSpot: number): Presentation {
+export function replaceSlide(presentation: Presentation, [slide, insertSpot]:[Slide, number]): Presentation {
     if (presentation.slides.length === 0) {
-        return presentation;
+        return presentation
     }
 
-    const newSlides = presentation.slides.filter(s => s.id !== slide.id);
-    newSlides.splice(insertSpot, 0, { ...slide });
+    const newSlides = presentation.slides.filter(s => s.id !== slide.id)
+    newSlides.splice(insertSpot, 0, slide)
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
+}
+
+export function setSlides(presentation: Presentation, [slides]:[Array<Slide>]) {
+    return {
+        ...presentation,
+        slides: slides
+    }
 }
 
 export function addSlideObject(presentation: Presentation, slideObject: SlideObject, idx: number, slideId: number, createId = true): Presentation {
-    const newSlideObject = createId ? { ...slideObject, id: generateTimestampId() } : { ...slideObject };
+    const newSlideObject = createId ? { ...slideObject, id: generateTimestampId() } : { ...slideObject }
     const newSlides = presentation.slides.map((slide, index) => {
         if (index === slideId) {
-            const newSlideObjects = [...slide.slideObject];
-            newSlideObjects.splice(idx, 0, newSlideObject);
+            const newSlideObjects = [...slide.slideObject]
+            newSlideObjects.splice(idx, 0, newSlideObject)
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function removeSlideObject(presentation: Presentation, id: number, slideId: number): Presentation {
     const newSlides = presentation.slides.map((slide, index) => {
         if (index === slideId) {
-            const newSlideObjects = slide.slideObject.filter((_, objIndex) => objIndex !== id);
+            const newSlideObjects = slide.slideObject.filter((_, objIndex) => objIndex !== id)
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function replaceSlideObject(presentation: Presentation, slideObj: SlideObject, slideId: number, insertSpot: number): Presentation {
     if (presentation.slides.length === 0) {
-        return presentation;
+        return presentation
     }
 
     const newSlides = presentation.slides.map((slide, index) => {
         if (index === slideId) {
-            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== slideObj.id);
-            newSlideObjects.splice(insertSpot, 0, { ...slideObj });
+            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== slideObj.id)
+            newSlideObjects.splice(insertSpot, 0, { ...slideObj })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changePlainTextContent(presentation: Presentation, content: string, id: number, slideId: number): Presentation {
@@ -227,22 +233,22 @@ export function changePlainTextContent(presentation: Presentation, content: stri
                     return {
                         ...obj,
                         content: content
-                    };
+                    }
                 }
-                return obj;
-            });
+                return obj
+            })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changePlainTextScale(presentation: Presentation, scale: number, id: number, slideId: number): Presentation {
@@ -253,22 +259,22 @@ export function changePlainTextScale(presentation: Presentation, scale: number, 
                     return {
                         ...obj,
                         scale: scale
-                    };
+                    }
                 }
-                return obj;
-            });
+                return obj
+            })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changePlainTextFontFamily(presentation: Presentation, fontFamily: string, id: number, slideId: number): Presentation {
@@ -279,22 +285,22 @@ export function changePlainTextFontFamily(presentation: Presentation, fontFamily
                     return {
                         ...obj,
                         fontFamily: fontFamily
-                    };
+                    }
                 }
-                return obj;
-            });
+                return obj
+            })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changeBackgroundToColor(presentation: Presentation, [color, slideId]: [string, string]): Presentation {
@@ -303,19 +309,19 @@ export function changeBackgroundToColor(presentation: Presentation, [color, slid
             const newBackground: Color = {
                 type: 'color',
                 color: color
-            };
+            }
             return {
                 ...slide,
                 background: newBackground
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changeBackgroundToImage(presentation: Presentation, imageSrc: string, slideId: number): Presentation {
@@ -324,19 +330,19 @@ export function changeBackgroundToImage(presentation: Presentation, imageSrc: st
             const newBackground: Picture = {
                 type: "picture",
                 src: imageSrc
-            };
+            }
             return {
                 ...slide,
                 background: newBackground
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changeSlideObjectScale(presentation: Presentation, height: number, width: number, id: number, slideId: number): Presentation {
@@ -351,22 +357,22 @@ export function changeSlideObjectScale(presentation: Presentation, height: numbe
                             height: height,
                             width: width
                         }
-                    };
+                    }
                 }
-                return obj;
-            });
+                return obj
+            })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 export function changeSlideObjectPosition(presentation: Presentation, x: number, y: number, id: number, slideId: number): Presentation {
@@ -381,22 +387,22 @@ export function changeSlideObjectPosition(presentation: Presentation, x: number,
                             x: x,
                             y: y
                         }
-                    };
+                    }
                 }
-                return obj;
-            });
+                return obj
+            })
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides
-    };
+    }
 }
 
 // Функции для добавления текста и картинок
@@ -414,23 +420,23 @@ export function addTextObject(presentation: Presentation, [slideId]: [string]): 
             height: 50
         },
         id: generateTimestampId()
-    };
+    }
 
     const newSlides = presentation.slides.map(slide => {
         if (slide.id === slideId) {
             return {
                 ...slide,
                 slideObject: [...slide.slideObject, newTextObject]
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides,
         selectedObjects: [newTextObject.id]
-    };
+    }
 }
 
 export function addImageObject(presentation: Presentation, [slideId, imageUrl]: [string, string]): Presentation {
@@ -444,49 +450,190 @@ export function addImageObject(presentation: Presentation, [slideId, imageUrl]: 
             height: 200
         },
         id: generateTimestampId()
-    };
+    }
 
     const newSlides = presentation.slides.map(slide => {
         if (slide.id === slideId) {
             return {
                 ...slide,
                 slideObject: [...slide.slideObject, newImageObject]
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
     return {
         ...presentation,
         slides: newSlides,
         selectedObjects: [newImageObject.id]
-    };
+    }
 }
 
 export function removeObject(presentation: Presentation, [objectId, slideId]: [string, string]): Presentation {
     const newSlides = presentation.slides.map(slide => {
         if (slide.id === slideId) {
-            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== objectId);
+            const newSlideObjects = slide.slideObject.filter(obj => obj.id !== objectId)
             return {
                 ...slide,
                 slideObject: newSlideObjects
-            };
+            }
         }
-        return slide;
-    });
+        return slide
+    })
 
-    const newSelectedObjects = presentation.selectedObjects.filter(id => id !== objectId);
+    const newSelectedObjects = presentation.selectedObjects.filter(id => id !== objectId)
 
     return {
         ...presentation,
         slides: newSlides,
         selectedObjects: newSelectedObjects
-    };
+    }
 }
 
-export function selectObject(presentation: Presentation, [objectId]: [string]): Presentation {
+export function selectObject(presentation: Presentation, objectIds: string[]): Presentation {    
     return {
         ...presentation,
-        selectedObjects: objectId != "" ? [objectId] : []
-    };
+        selectedObjects: objectIds
+    }
+}
+
+export function moveObject(presentation: Presentation, [objectId, x, y]: [string, number, number]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        const newSlideObjects = slide.slideObject.map(obj => {
+            if (obj.id === objectId) {
+                return {
+                    ...obj,
+                    rect: {
+                        ...obj.rect,
+                        x: x,
+                        y: y
+                    }
+                }
+            }
+            return obj
+        })
+        
+        return {
+            ...slide,
+            slideObject: newSlideObjects
+        }
+    })
+
+    return {
+        ...presentation,
+        slides: newSlides
+    }
+}
+
+export function resizeObject(presentation: Presentation, [objectId, x, y, width, height]: [string, number, number, number, number]): Presentation {
+    const newSlides = presentation.slides.map(slide => {
+        const newSlideObjects = slide.slideObject.map(obj => {
+            if (obj.id === objectId) {
+                return {
+                    ...obj,
+                    rect: {
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    }
+                }
+            }
+            return obj
+        })
+        
+        return {
+            ...slide,
+            slideObject: newSlideObjects
+        }
+    })
+
+    return {
+        ...presentation,
+        slides: newSlides
+    }
+}
+
+type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
+
+type ResizeCalculation = {
+    newX: number
+    newY: number
+    newWidth: number
+    newHeight: number
+}
+
+type Constraints = {
+    minX: number
+    minY: number
+    maxWidth: number
+    maxHeight: number
+    minSize: number
+}
+
+export function calculateResize(
+    direction: ResizeDirection,
+    deltaX: number,
+    deltaY: number,
+    startLeft: number,
+    startTop: number,
+    startWidth: number,
+    startHeight: number,
+    constraints: Constraints
+): ResizeCalculation {
+    let newWidth = startWidth
+    let newHeight = startHeight
+    let newX = startLeft
+    let newY = startTop
+
+    const { minSize } = constraints
+
+    switch (direction) {
+        case 'nw':
+            newWidth = Math.max(minSize, startWidth - deltaX)
+            newHeight = Math.max(minSize, startHeight - deltaY)
+            newX = startLeft + (startWidth - newWidth)
+            newY = startTop + (startHeight - newHeight)
+            break
+        case 'ne':
+            newWidth = Math.max(minSize, startWidth + deltaX)
+            newHeight = Math.max(minSize, startHeight - deltaY)
+            newY = startTop + (startHeight - newHeight)
+            break
+        case 'sw':
+            newWidth = Math.max(minSize, startWidth - deltaX)
+            newHeight = Math.max(minSize, startHeight + deltaY)
+            newX = startLeft + (startWidth - newWidth)
+            break
+        case 'se':
+            newWidth = Math.max(minSize, startWidth + deltaX)
+            newHeight = Math.max(minSize, startHeight + deltaY)
+            break
+        case 'n':
+            newHeight = Math.max(minSize, startHeight - deltaY)
+            newY = startTop + (startHeight - newHeight)
+            break
+        case 's':
+            newHeight = Math.max(minSize, startHeight + deltaY)
+            break
+        case 'w':
+            newWidth = Math.max(minSize, startWidth - deltaX)
+            newX = startLeft + (startWidth - newWidth)
+            break
+        case 'e':
+            newWidth = Math.max(minSize, startWidth + deltaX)
+            break
+    }
+
+    const constrainedX = Math.max(constraints.minX, newX)
+    const constrainedY = Math.max(constraints.minY, newY)
+    const constrainedWidth = Math.min(Math.max(minSize, newWidth), constraints.maxWidth - constrainedX)
+    const constrainedHeight = Math.min(Math.max(minSize, newHeight), constraints.maxHeight - constrainedY)
+
+    return {
+        newX: constrainedX,
+        newY: constrainedY,
+        newWidth: constrainedWidth,
+        newHeight: constrainedHeight
+    }
 }

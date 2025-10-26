@@ -31,19 +31,25 @@
 
 .counter {
     position: absolute;
-    border-radius: 5px;
-    top: 70px;
-    left: 6px;
-    font-size: 16px;
+    top: 4px;
+    left: 4px;
+    background: rgba(0, 0, 0, 0.7);
     color: white;
-    padding: 2px 4px;
-    background-color: rgba(0, 0, 0, 0.7);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
 }
 
 .slideCollectionObject {
     position: relative;
     height: 180px;
     margin-bottom: 20px;
+    transition: all 0.2s ease;
+    margin: 8px 0;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    padding: 4px;
 }
 
 .slide {
@@ -56,4 +62,9 @@
     outline-color: #535BF2;
     outline-width: 2px;
     border-radius: 12px;
+}
+
+.slideCollectionObject.dragging {
+    opacity: 0.4;
+    transform: rotate(3deg);
 }

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState } from "react"
 import './toolbar.module.css'
-import { Button } from "../../common/Button";
+import { Button } from "../../common/Button"
 import styles from "./toolbar.module.css"
 
 type toolbarProps = {
@@ -8,27 +8,26 @@ type toolbarProps = {
 }
 
 export function Toolbar(props: toolbarProps) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [title, setTitle] = useState(props.title);
+    const [isEditing, setIsEditing] = useState(false)
+    const [title, setTitle] = useState(props.title)
 
     const handleTitleClick = () => {
-        setIsEditing(true);
-    };
+        setIsEditing(true)
+    }
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTitle(e.target.value);
-        console.log(e.target.value)
-    };
+        setTitle(e.target.value)
+    }
 
     const handleTitleBlur = () => {
-        setIsEditing(false);
-    };
+        setIsEditing(false)
+    }
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            handleTitleBlur();
+            handleTitleBlur()
         }
-    };
+    }
 
     return (
         <div className={styles.toolbar}>

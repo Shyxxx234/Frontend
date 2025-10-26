@@ -55,6 +55,7 @@ function App(props: AppProps) {
                     slides={props.presentation.slides} 
                     slideIndex={slideIndex}
                     selectedObjects={props.presentation.selectedObjects}
+                    selectedSlideId={props.presentation.selectedSlide}
                 />
                 <SidePanel 
                     slides={props.presentation.slides}

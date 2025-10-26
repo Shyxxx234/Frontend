@@ -1,3 +1,4 @@
+import type React from "react"
 import { Button } from "../../common/Button"
 import { dispatch } from "../../presentation"
 import { 
@@ -41,7 +42,7 @@ export function SidePanel(props: SidePanelProps) {
 
     const handleAddImage = () => {
         if (props.selectedSlideId) {
-            const imageUrl = prompt("Введите URL изображения:", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWaFnicAytoRPP_Esi8F-TtEqcTnxdIh_sqA&s");
+            const imageUrl = prompt("Введите URL изображения:", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWaFnicAytoRPP_Esi8F-TtEqcTnxdIh_sqA&s")
             if (imageUrl) {
                 dispatch(addImageObject, [props.selectedSlideId, imageUrl])
             }
@@ -50,9 +51,14 @@ export function SidePanel(props: SidePanelProps) {
 
     const handleRemoveObject = () => {
         if (props.selectedSlideId && props.selectedObjects.length > 0) {
-            const objectId = props.selectedObjects[0];
+            const objectId = props.selectedObjects[0]
             dispatch(removeObject, [objectId, props.selectedSlideId])
         }
+    }
+
+    const handleChangeBackgroundColor = (e: React.ChangeEvent) => {
+        const target = e.target as HTMLInputElement
+        dispatch(changeBackgroundToColor, [target.value, props.selectedSlideId])
     }
 
     return (
@@ -82,10 +88,7 @@ export function SidePanel(props: SidePanelProps) {
                 >
                     Удалить объект
                 </Button>
-                <input type="color"  onChange={(event) => {
-                    const target = event.target as HTMLInputElement
-                    dispatch(changeBackgroundToColor, [target.value, props.selectedSlideId])
-                }} />
+                <input type="color" onChange={handleChangeBackgroundColor} />
             </div>
         </div>
     )

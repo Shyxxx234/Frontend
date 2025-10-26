@@ -1,0 +1,105 @@
+.slide {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+}
+
+.slideObject {
+    position: absolute;
+    outline: none;
+}
+
+.slideObject.selected {
+    outline: 2px solid #2196F3;
+}
+
+.slideObject.multipleSelected {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+.textObject {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-word;
+    overflow: hidden;
+}
+
+.imageObject {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Resize handles */
+.resizeHandle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #2196F3;
+    border: 1px solid white;
+    z-index: 10;
+}
+
+.resizeHandleNw {
+    top: -4px;
+    left: -4px;
+    cursor: nw-resize;
+}
+
+.resizeHandleNe {
+    top: -4px;
+    right: -4px;
+    cursor: ne-resize;
+}
+
+.resizeHandleSw {
+    bottom: -4px;
+    left: -4px;
+    cursor: sw-resize;
+}
+
+.resizeHandleSe {
+    bottom: -4px;
+    right: -4px;
+    cursor: se-resize;
+}
+
+.resizeHandleN {
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 6px;
+    cursor: n-resize;
+}
+
+.resizeHandleS {
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 6px;
+    cursor: s-resize;
+}
+
+.resizeHandleW {
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 12px;
+    cursor: w-resize;
+}
+
+.resizeHandleE {
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 12px;
+    cursor: e-resize;
+}
