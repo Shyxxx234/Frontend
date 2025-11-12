@@ -135,8 +135,6 @@
     cursor: not-allowed;
 }
 
-/* Добавьте эти стили в ваш существующий CSS файл */
-
 .sourceButtons {
     display: flex;
     gap: 10px;
@@ -181,3 +179,17 @@
     cursor: pointer;
     font-size: 14px;
 }
+
+.slideShowMode {
+    position: absolute;
+    left: -25px;
+    top: 40px;
+    background: black;
+    transform: scale(1.9);
+}
+
+.slideShowMode .slide {
+    max-width: 100%;
+    max-height: 100%;
+}
+

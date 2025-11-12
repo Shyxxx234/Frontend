@@ -1,6 +1,8 @@
+// common/ShowSlide.tsx
 import type { Slide } from "../store/typeAndFunctions"
-import { dispatch } from "../presentation"
-import { selectObject, moveObject, resizeObject, calculateResize } from "../store/typeAndFunctions"
+import { useDispatch } from 'react-redux'
+import { calculateResize } from "../store/typeAndFunctions"
+import { selectObject, moveObject, resizeObject } from "../store/presentationSlice"
 import React, { useState, useRef } from "react"
 import styles from "./ShowSlide.module.css"
 
@@ -12,10 +14,10 @@ type ShowSlideProps = {
     objSelection?: Array<string>
 }
 
-
 type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
 
 export function ShowSlide(props: ShowSlideProps) {
+    const dispatch = useDispatch()
     const [resizingId, setResizingId] = useState<string | null>(null)
     const slideRef = useRef<HTMLDivElement>(null)
 
@@ -30,18 +32,16 @@ export function ShowSlide(props: ShowSlideProps) {
             newSelection = [objId]
         }
 
-        dispatch(selectObject, newSelection)
+        dispatch(selectObject(newSelection))
     }
 
     const handleSlideClick = (e: React.MouseEvent) => {
-        if (props.disableObjectClicks || resizingId) return
         if (e.target === e.currentTarget) {
-            dispatch(selectObject, [])
+            dispatch(selectObject([]))
         }
     }
 
     const startDrag = (e: React.MouseEvent) => {
-        if (props.disableObjectClicks) return
         e.stopPropagation()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
@@ -57,7 +57,7 @@ export function ShowSlide(props: ShowSlideProps) {
                 if (selectedObj) {
                     const newX = Math.min(Math.max(0, selectedObj.rect.x + deltaX), slideRect.width - selectedObj.rect.width)
                     const newY = Math.min(Math.max(0, selectedObj.rect.y + deltaY), slideRect.height - selectedObj.rect.height)
-                    dispatch(moveObject, [selectedObjId, newX, newY])
+                    dispatch(moveObject({ objectId: selectedObjId, x: newX, y: newY }))
                 }
             })
         }
@@ -72,7 +72,6 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
-        if (props.disableObjectClicks) return
         e.stopPropagation()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
@@ -113,7 +112,13 @@ export function ShowSlide(props: ShowSlideProps) {
                 }
             )
 
-            dispatch(resizeObject, [objId, newX, newY, newWidth, newHeight])
+            dispatch(resizeObject({ 
+                objectId: objId, 
+                x: newX, 
+                y: newY, 
+                width: newWidth, 
+                height: newHeight 
+            }))
         }
 
         const onMouseUp = () => {
@@ -126,16 +131,16 @@ export function ShowSlide(props: ShowSlideProps) {
         document.addEventListener('mouseup', onMouseUp)
     }
 
-    const ResizeHandle = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
+    const ResizeHandler = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
         const handleClassNames = {
             'nw': `${styles.resizeHandle} ${styles.resizeHandleNw}`,
             'ne': `${styles.resizeHandle} ${styles.resizeHandleNe}`,
             'sw': `${styles.resizeHandle} ${styles.resizeHandleSw}`,
             'se': `${styles.resizeHandle} ${styles.resizeHandleSe}`,
-            'n': `${styles.resizeHandle} ${styles.resizeHandleN}`,
-            's': `${styles.resizeHandle} ${styles.resizeHandleS}`,
-            'w': `${styles.resizeHandle} ${styles.resizeHandleW}`,
-            'e': `${styles.resizeHandle} ${styles.resizeHandleE}`,
+            'n':  `${styles.resizeHandle} ${styles.resizeHandleN}`,
+            's':  `${styles.resizeHandle} ${styles.resizeHandleS}`,
+            'w':  `${styles.resizeHandle} ${styles.resizeHandleW}`,
+            'e':  `${styles.resizeHandle} ${styles.resizeHandleE}`,
         }
 
         return (
@@ -204,16 +209,16 @@ export function ShowSlide(props: ShowSlideProps) {
                             />
                         )}
 
-                        {isSelected && !props.disableObjectClicks && objSelection.length === 1 && (
+                        {isSelected && objSelection.length === 1 && (
                             <>
-                                <ResizeHandle direction="nw" objId={obj.id} />
-                                <ResizeHandle direction="ne" objId={obj.id} />
-                                <ResizeHandle direction="sw" objId={obj.id} />
-                                <ResizeHandle direction="se" objId={obj.id} />
-                                <ResizeHandle direction="n" objId={obj.id} />
-                                <ResizeHandle direction="s" objId={obj.id} />
-                                <ResizeHandle direction="w" objId={obj.id} />
-                                <ResizeHandle direction="e" objId={obj.id} />
+                                <ResizeHandler direction="nw" objId={obj.id} />
+                                <ResizeHandler direction="ne" objId={obj.id} />
+                                <ResizeHandler direction="sw" objId={obj.id} />
+                                <ResizeHandler direction="se" objId={obj.id} />
+                                <ResizeHandler direction="n" objId={obj.id} />
+                                <ResizeHandler direction="s" objId={obj.id} />
+                                <ResizeHandler direction="w" objId={obj.id} />
+                                <ResizeHandler direction="e" objId={obj.id} />
                             </>
                         )}
                     </div>

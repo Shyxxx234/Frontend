@@ -34,7 +34,6 @@
     object-fit: contain;
 }
 
-/* Resize handles */
 .resizeHandle {
     position: absolute;
     width: 8px;

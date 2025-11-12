@@ -1,64 +1,65 @@
 import type React from "react"
 import { Button } from "../../common/Button"
-import { dispatch } from "../../presentation"
+import { createBlankSlide } from "../../store/typeAndFunctions"
+import styles from "./sidePanel.module.css"
+import { useSelector, useDispatch } from 'react-redux'
+import type { RootState } from '../../store/store'
 import { 
     addSlide, 
-    createBlankSlide, 
     removeSlide,
     addTextObject,
     addImageObject,
     removeObject,
-    changeBackgroundToColor,
-    type Slide
-} from "../../store/typeAndFunctions"
-import styles from "./sidePanel.module.css"
+    changeBackgroundToColor
+} from '../../store/presentationSlice'
 
-type SidePanelProps = {
-    slides: Array<Slide>,
-    selectedSlideId: string,
-    selectedObjects: Array<string>
-}
-
-export function SidePanel(props: SidePanelProps) {
+export function SidePanel() {
+    const dispatch = useDispatch()
+    const presentation = useSelector((state: RootState) => state.presentation)
+    const slides = presentation.slides
+    const selectedSlideId = presentation.selectedSlide
+    const selectedObjects = presentation.selectedObjects
 
     const handleAddSlide = () => {
-        dispatch(addSlide, [
-            createBlankSlide(),
-            props.slides.length,
-        ])
+        dispatch(addSlide({ 
+            slide: createBlankSlide(),
+            idx: slides.length 
+        }))
     }
 
     const handleRemoveSlide = () => {
-        if (props.selectedSlideId) {
-            dispatch(removeSlide, [props.selectedSlideId])
+        if (selectedSlideId) {
+            dispatch(removeSlide(selectedSlideId))
         }
     }
 
     const handleAddText = () => {
-        if (props.selectedSlideId) {
-            dispatch(addTextObject, [props.selectedSlideId])
+        if (selectedSlideId) {
+            dispatch(addTextObject(selectedSlideId))
         }
     }
 
     const handleAddImage = () => {
-        if (props.selectedSlideId) {
+        if (selectedSlideId) {
             const imageUrl = prompt("Введите URL изображения:", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWaFnicAytoRPP_Esi8F-TtEqcTnxdIh_sqA&s")
             if (imageUrl) {
-                dispatch(addImageObject, [props.selectedSlideId, imageUrl])
+                dispatch(addImageObject({ slideId: selectedSlideId, imageUrl }))
             }
         }
     }
 
     const handleRemoveObject = () => {
-        if (props.selectedSlideId && props.selectedObjects.length > 0) {
-            const objectId = props.selectedObjects[0]
-            dispatch(removeObject, [objectId, props.selectedSlideId])
+        if (selectedSlideId && selectedObjects.length > 0) {
+            const objectId = selectedObjects[0]
+            dispatch(removeObject({ objectId, slideId: selectedSlideId }))
         }
     }
 
     const handleChangeBackgroundColor = (e: React.ChangeEvent) => {
         const target = e.target as HTMLInputElement
-        dispatch(changeBackgroundToColor, [target.value, props.selectedSlideId])
+        if (selectedSlideId) {
+            dispatch(changeBackgroundToColor({ color: target.value, slideId: selectedSlideId }))
+        }
     }
 
     return (
@@ -84,7 +85,7 @@ export function SidePanel(props: SidePanelProps) {
                 <Button 
                     className={styles.button} 
                     onClick={handleRemoveObject}
-                    disabled={props.selectedObjects.length === 0}
+                    disabled={selectedObjects.length === 0}
                 >
                     Удалить объект
                 </Button>

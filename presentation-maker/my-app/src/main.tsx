@@ -1,18 +1,14 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import { addPresentationChangeHandler, getPresentation } from './presentation.ts'
+import './index.css'
+import { Provider } from 'react-redux'
+import { store } from './store/store'
 
-const root = createRoot(document.getElementById('root')!)
-
-function render() {
-  root.render(
-    <StrictMode>
-      <App presentation={getPresentation()} />
-    </StrictMode>,
-  )
-}
-
-addPresentationChangeHandler(render)
-render()
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </React.StrictMode>,
+)

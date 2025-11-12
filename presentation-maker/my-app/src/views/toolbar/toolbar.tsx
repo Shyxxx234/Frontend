@@ -2,14 +2,19 @@ import { useState } from "react"
 import './toolbar.module.css'
 import { Button } from "../../common/Button"
 import styles from "./toolbar.module.css"
+import { useSelector, useDispatch } from 'react-redux'
+import type { RootState } from '../../store/store'
+import { changePresentationName } from '../../store/presentationSlice'
 
-type toolbarProps = {
-    title: string,
+type ToolbarProps = {
+    onStartSlideShow: () => void,
 }
 
-export function Toolbar(props: toolbarProps) {
+export function Toolbar(props: ToolbarProps) {
+    const dispatch = useDispatch()
+    const presentation = useSelector((state: RootState) => state.presentation)
     const [isEditing, setIsEditing] = useState(false)
-    const [title, setTitle] = useState(props.title)
+    const [title, setTitle] = useState(presentation.title)
 
     const handleTitleClick = () => {
         setIsEditing(true)
@@ -21,6 +26,9 @@ export function Toolbar(props: toolbarProps) {
 
     const handleTitleBlur = () => {
         setIsEditing(false)
+        if (title !== presentation.title) {
+            dispatch(changePresentationName(title))
+        }
     }
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -45,30 +53,29 @@ export function Toolbar(props: toolbarProps) {
                 >
                     Вставка
                 </Button>
-
             </div>
 
             {isEditing ? (
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={handleTitleChange}
-                        onBlur={handleTitleBlur}
-                        onKeyDown={handleKeyPress}
-                        className={styles.title}
-                        autoFocus
-                    />
-                ) : (
-                    <Button
-                        onClick={handleTitleClick}
-                        className={`${styles.button} ${styles.title}`}
-                    >
-                        {title || "Название презентации"}
-                    </Button>
-                )}
+                <input
+                    type="text"
+                    value={title}
+                    onChange={handleTitleChange}
+                    onBlur={handleTitleBlur}
+                    onKeyDown={handleKeyPress}
+                    className={styles.title}
+                    autoFocus
+                />
+            ) : (
+                <Button
+                    onClick={handleTitleClick}
+                    className={`${styles.button} ${styles.title}`}
+                >
+                    {presentation.title || "Название презентации"}
+                </Button>
+            )}
 
             <Button
-                onClick={() => console.log("Slide-Show")}
+                onClick={props.onStartSlideShow}
                 className={`${styles.button} ${styles.slide_show}`}
             >
                 Слайд-шоу
