@@ -1,4 +1,3 @@
-// common/ShowSlide.tsx
 import type { Slide } from "../store/typeAndFunctions"
 import { useDispatch } from 'react-redux'
 import { calculateResize } from "../store/typeAndFunctions"
