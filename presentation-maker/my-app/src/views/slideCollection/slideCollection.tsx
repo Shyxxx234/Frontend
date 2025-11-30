@@ -3,7 +3,8 @@ import { useEffect, useState, useRef } from "react"
 import styles from "./slideCollection.module.css"
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from '../../store/store'
-import { replaceSlide } from '../../store/presentationSlice'
+import { replaceSlide } from '../../store/slideSlice'
+import { selectSlide } from '../../store/presentationSlice'
 
 type SlideCollectionProps = {
     onSlideSelect: (slideId: string) => void
@@ -12,7 +13,7 @@ type SlideCollectionProps = {
 export function SlideCollection(props: SlideCollectionProps) {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
-    const slideCollection = presentation.slides
+    const slides = useSelector((state: RootState) => state.slides.slides)
     const selectedSlide = presentation.selectedSlide
     
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -24,6 +25,7 @@ export function SlideCollection(props: SlideCollectionProps) {
     const handleSlideClick = (slideId: string) => {
         if (draggedIndex === null) {
             props.onSlideSelect(slideId)
+            dispatch(selectSlide(slideId))
         }
     }
 
@@ -44,7 +46,10 @@ export function SlideCollection(props: SlideCollectionProps) {
     const handleMouseUp = (dropIndex: number, e: React.MouseEvent) => {
         e.stopPropagation()
         if (draggedIndex !== null && draggedIndex !== dropIndex) {
-            dispatch(replaceSlide({ dragItemId: draggedIndex, insertSpot: dropIndex }))
+            dispatch(replaceSlide({ 
+                dragItemId: draggedIndex, 
+                insertSpot: dropIndex 
+            }))
         }
         setDraggedIndex(null)
         setDragOverIndex(null)
@@ -107,6 +112,12 @@ export function SlideCollection(props: SlideCollectionProps) {
         }
     }, [])
 
+    useEffect(() => {
+        if (slides.length > 0 && !selectedSlide) {
+            dispatch(selectSlide(slides[0].id))
+        }
+    }, [slides, selectedSlide, dispatch])
+
     return (
         <div 
             className={styles.slideCollection} 
@@ -114,11 +125,15 @@ export function SlideCollection(props: SlideCollectionProps) {
             onMouseMove={handleMouseMove}
         >
             <div>
-                {slideCollection.map((slide, index) => (
+                {slides.map((slide, index) => (
                     <div
-                        className={`${styles.slideCollectionObject} ${selectedSlide === slide.id ? styles.slideCollectionObjectSelected : ''
-                            } ${draggedIndex === index ? styles.dragging : ''} ${dragOverIndex === index ? styles.dragOver : ''
-                            }`}
+                        className={`${styles.slideCollectionObject} ${
+                            selectedSlide === slide.id ? styles.slideCollectionObjectSelected : ''
+                        } ${
+                            draggedIndex === index ? styles.dragging : ''
+                        } ${
+                            dragOverIndex === index ? styles.dragOver : ''
+                        }`}
                         key={slide.id}
                         id={slide.id}
                         onClick={() => handleSlideClick(slide.id)}

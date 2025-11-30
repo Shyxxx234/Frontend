@@ -45,6 +45,7 @@ module.exports = [
       // ... any rules you want
       'react/jsx-uses-react': 'error',
       'react/jsx-uses-vars': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
      },
     // ... others are omitted for brevity
   },

@@ -1,9 +1,12 @@
-import type { Slide } from "../store/typeAndFunctions"
-import { useDispatch } from 'react-redux'
-import { calculateResize } from "../store/typeAndFunctions"
-import { selectObject, moveObject, resizeObject } from "../store/presentationSlice"
-import React, { useState, useRef } from "react"
+import type { Slide, SlideObject } from "../store/types"
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState } from '../store/store'
+import { calculateResize } from "../store/utils"
+import { selectObject } from "../store/presentationSlice"
+
+import React, { useState, useRef, useEffect } from "react"
 import styles from "./ShowSlide.module.css"
+import { moveObject, resizeObject } from "../store/slideObjectSlice"
 
 type ShowSlideProps = {
     slide: Slide
@@ -15,10 +18,37 @@ type ShowSlideProps = {
 
 type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
 
+type TempTransform = {
+    objectId: string
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
 export function ShowSlide(props: ShowSlideProps) {
     const dispatch = useDispatch()
+
+    const slideObjects = useSelector((state: RootState) =>
+        state.slideObjects.objects[props.slideId] || [],
+        (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
+    )
+
     const [resizingId, setResizingId] = useState<string | null>(null)
+    const [tempTransform, setTempTransform] = useState<TempTransform | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
     const slideRef = useRef<HTMLDivElement>(null)
+    const tempTransformRef = useRef<TempTransform | null>(null)
+
+    useEffect(() => {
+        tempTransformRef.current = tempTransform
+    }, [tempTransform])
+
+    useEffect(() => {
+        if (!isDragging && !resizingId) {
+            setTempTransform(null)
+        }
+    }, [isDragging, resizingId]) // Убрали slideObjects из зависимостей
 
     const handleObjectClick = (e: React.MouseEvent, objId: string) => {
         if (props.disableObjectClicks || resizingId) return
@@ -35,35 +65,64 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const handleSlideClick = (e: React.MouseEvent) => {
-        if (e.target === e.currentTarget) {
+        if (e.target === e.currentTarget && !props.disableObjectClicks) {
             dispatch(selectObject([]))
         }
     }
 
-    const startDrag = (e: React.MouseEvent) => {
+    const startDrag = (e: React.MouseEvent, objId: string) => {
+        if (props.disableObjectClicks) return
+
         e.stopPropagation()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
         if (!slideRect) return
 
-        const onMouseMove = (moveEvent: MouseEvent) => {
-            const deltaX = moveEvent.clientX - e.clientX
-            const deltaY = moveEvent.clientY - e.clientY
+        const selectedObj = slideObjects.find(obj => obj.id === objId)
+        if (!selectedObj) return
 
-            const selectedObjects = props.objSelection || []
-            selectedObjects.forEach(selectedObjId => {
-                const selectedObj = props.slide.slideObject?.find(obj => obj.id === selectedObjId)
-                if (selectedObj) {
-                    const newX = Math.min(Math.max(0, selectedObj.rect.x + deltaX), slideRect.width - selectedObj.rect.width)
-                    const newY = Math.min(Math.max(0, selectedObj.rect.y + deltaY), slideRect.height - selectedObj.rect.height)
-                    dispatch(moveObject({ objectId: selectedObjId, x: newX, y: newY }))
-                }
+        const startMouseX = e.clientX
+        const startMouseY = e.clientY
+        const startObjX = selectedObj.rect.x
+        const startObjY = selectedObj.rect.y
+
+        setIsDragging(true)
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.clientX - startMouseX
+            const deltaY = moveEvent.clientY - startMouseY
+
+            const newX = Math.min(Math.max(0, startObjX + deltaX), slideRect.width - selectedObj.rect.width)
+            const newY = Math.min(Math.max(0, startObjY + deltaY), slideRect.height - selectedObj.rect.height)
+
+            setTempTransform({
+                objectId: objId,
+                x: newX,
+                y: newY,
+                width: selectedObj.rect.width,
+                height: selectedObj.rect.height
             })
         }
 
         const onMouseUp = () => {
             document.removeEventListener('mousemove', onMouseMove)
             document.removeEventListener('mouseup', onMouseUp)
+
+            const finalTransform = tempTransformRef.current
+
+            if (finalTransform) {
+                dispatch(moveObject({
+                    objectId: objId,
+                    slideId: props.slideId,
+                    x: finalTransform.x,
+                    y: finalTransform.y
+                }))
+            }
+
+            setTimeout(() => {
+                setTempTransform(null)
+                setIsDragging(false)
+            }, 0)
         }
 
         document.addEventListener('mousemove', onMouseMove)
@@ -71,12 +130,14 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
+        if (props.disableObjectClicks) return
+
         e.stopPropagation()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
         if (!slideRect) return
 
-        const obj = props.slide.slideObject?.find(obj => obj.id === objId)
+        const obj = slideObjects.find(obj => obj.id === objId)
         if (!obj) return
 
         const startMouseX = e.clientX
@@ -111,19 +172,36 @@ export function ShowSlide(props: ShowSlideProps) {
                 }
             )
 
-            dispatch(resizeObject({ 
-                objectId: objId, 
-                x: newX, 
-                y: newY, 
-                width: newWidth, 
-                height: newHeight 
-            }))
+            setTempTransform({
+                objectId: objId,
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            })
         }
 
         const onMouseUp = () => {
             document.removeEventListener('mousemove', onMouseMove)
             document.removeEventListener('mouseup', onMouseUp)
-            setResizingId(null)
+
+            const finalTransform = tempTransformRef.current
+
+            if (finalTransform) {
+                dispatch(resizeObject({
+                    objectId: objId,
+                    slideId: props.slideId,
+                    x: finalTransform.x,
+                    y: finalTransform.y,
+                    width: finalTransform.width,
+                    height: finalTransform.height
+                }))
+            }
+
+            setTimeout(() => {
+                setTempTransform(null)
+                setResizingId(null)
+            }, 0)
         }
 
         document.addEventListener('mousemove', onMouseMove)
@@ -131,15 +209,17 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const ResizeHandler = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
+        if (props.disableObjectClicks) return null
+
         const handleClassNames = {
             'nw': `${styles.resizeHandle} ${styles.resizeHandleNw}`,
             'ne': `${styles.resizeHandle} ${styles.resizeHandleNe}`,
             'sw': `${styles.resizeHandle} ${styles.resizeHandleSw}`,
             'se': `${styles.resizeHandle} ${styles.resizeHandleSe}`,
-            'n':  `${styles.resizeHandle} ${styles.resizeHandleN}`,
-            's':  `${styles.resizeHandle} ${styles.resizeHandleS}`,
-            'w':  `${styles.resizeHandle} ${styles.resizeHandleW}`,
-            'e':  `${styles.resizeHandle} ${styles.resizeHandleE}`,
+            'n': `${styles.resizeHandle} ${styles.resizeHandleN}`,
+            's': `${styles.resizeHandle} ${styles.resizeHandleS}`,
+            'w': `${styles.resizeHandle} ${styles.resizeHandleW}`,
+            'e': `${styles.resizeHandle} ${styles.resizeHandleE}`,
         }
 
         return (
@@ -151,7 +231,18 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const objSelection = props.objSelection || []
-    const slideObjects = props.slide.slideObject || []
+
+    const getObjectRect = (obj: SlideObject) => {
+        if (tempTransform && tempTransform.objectId === obj.id) {
+            return {
+                x: tempTransform.x,
+                y: tempTransform.y,
+                width: tempTransform.width,
+                height: tempTransform.height
+            }
+        }
+        return obj.rect
+    }
 
     return (
         <div
@@ -161,16 +252,19 @@ export function ShowSlide(props: ShowSlideProps) {
             style={{
                 backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
                 backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
+                cursor: props.disableObjectClicks ? 'default' : 'pointer'
             }}
         >
             {slideObjects.map(obj => {
                 const isSelected = objSelection.includes(obj.id)
                 const isMultipleSelected = isSelected && objSelection.length > 1
+                const rect = getObjectRect(obj)
 
                 const objectClasses = [
                     styles.slideObject,
                     isSelected ? styles.selected : '',
-                    isMultipleSelected ? styles.multipleSelected : ''
+                    isMultipleSelected ? styles.multipleSelected : '',
+                    props.disableObjectClicks ? styles.slideShowMode : ''
                 ].join(' ')
 
                 return (
@@ -178,12 +272,13 @@ export function ShowSlide(props: ShowSlideProps) {
                         key={obj.id}
                         className={objectClasses}
                         onClick={(e) => handleObjectClick(e, obj.id)}
-                        onMouseDown={startDrag}
+                        onMouseDown={(e) => startDrag(e, obj.id)}
                         style={{
-                            left: obj.rect.x,
-                            top: obj.rect.y,
-                            width: obj.rect.width,
-                            height: obj.rect.height,
+                            left: rect.x,
+                            top: rect.y,
+                            width: rect.width,
+                            height: rect.height,
+                            cursor: props.disableObjectClicks ? 'default' : 'move'
                         }}
                     >
                         {obj.type === 'plain_text' && (
@@ -193,6 +288,7 @@ export function ShowSlide(props: ShowSlideProps) {
                                     fontFamily: obj.fontFamily,
                                     fontWeight: obj.weight,
                                     fontSize: `${obj.scale}em`,
+                                    cursor: props.disableObjectClicks ? 'default' : 'text'
                                 }}
                                 contentEditable={false}
                             >
@@ -205,10 +301,13 @@ export function ShowSlide(props: ShowSlideProps) {
                                 className={styles.imageObject}
                                 alt=""
                                 draggable={false}
+                                style={{
+                                    cursor: props.disableObjectClicks ? 'default' : 'move'
+                                }}
                             />
                         )}
 
-                        {isSelected && objSelection.length === 1 && (
+                        {!props.disableObjectClicks && isSelected && objSelection.length === 1 && (
                             <>
                                 <ResizeHandler direction="nw" objId={obj.id} />
                                 <ResizeHandler direction="ne" objId={obj.id} />

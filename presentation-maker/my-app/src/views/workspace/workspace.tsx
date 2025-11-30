@@ -1,13 +1,12 @@
 import { ShowSlide } from "../../common/ShowSlide"
-
 import styles from "./workspace.module.css"
 import { useState, useRef, useEffect } from "react"
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from '../../store/store'
-import { selectSlide, addTextObject, addImageObject } from '../../store/presentationSlice'
+import { selectSlide } from '../../store/presentationSlice'
+import { addTextObject, addImageObject } from '../../store/slideObjectSlice'
 
 type WorkspaceProps = {
-    slideIndex: number,
     isSlideShow?: boolean,
     onExitSlideShow?: () => void
 }
@@ -17,24 +16,20 @@ type ModalState = 'none' | 'source' | 'url'
 export function Workspace(props: WorkspaceProps) {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
-    const slides = presentation.slides
+    const slides = useSelector((state: RootState) => state.slides.slides)
+    const slideObjects = useSelector((state: RootState) => state.slideObjects.objects)
+    
     const selectedSlideId = presentation.selectedSlide
     const selectedObjects = presentation.selectedObjects
     
-    const slide = slides[props.slideIndex]
+    const slideIndex = slides.findIndex(slide => slide.id === selectedSlideId)
+    const slide = slides[slideIndex]
+    
     const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null)
     const [imageUrlInput, setImageUrlInput] = useState<string>("")
     const [modalState, setModalState] = useState<ModalState>('none')
-    const [shouldShowFileInput, setShouldShowFileInput] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const workspaceRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        if (shouldShowFileInput && fileInputRef.current) {
-            fileInputRef.current.click()
-            setShouldShowFileInput(false)
-        }
-    }, [shouldShowFileInput])
 
     useEffect(() => {
         if (props.isSlideShow) {
@@ -46,16 +41,22 @@ export function Workspace(props: WorkspaceProps) {
         }
     }, [props.isSlideShow])
 
+    useEffect(() => {
+        if (slides.length > 0 && !selectedSlideId) {
+            dispatch(selectSlide(slides[0].id))
+        }
+    }, [slides, selectedSlideId, dispatch])
+
     const goToPreviousSlide = () => {
-        if (props.slideIndex > 0) {
-            const prevSlide = slides[props.slideIndex - 1]
+        if (slideIndex > 0) {
+            const prevSlide = slides[slideIndex - 1]
             dispatch(selectSlide(prevSlide.id))
         }
     }
 
     const goToNextSlide = () => {
-        if (props.slideIndex < slides.length - 1) {
-            const nextSlide = slides[props.slideIndex + 1]
+        if (slideIndex < slides.length - 1) {
+            const nextSlide = slides[slideIndex + 1]
             dispatch(selectSlide(nextSlide.id))
         }
     }
@@ -63,7 +64,10 @@ export function Workspace(props: WorkspaceProps) {
     const handleContextMenu = (e: React.MouseEvent) => {
         if (props.isSlideShow) return
         e.preventDefault()
-        if (!selectedSlideId) return
+        
+        if (!selectedSlideId) {
+            return
+        }
         
         const rect = workspaceRef.current?.getBoundingClientRect()
         if (rect) {
@@ -76,7 +80,8 @@ export function Workspace(props: WorkspaceProps) {
 
     const handleAddText = () => {
         if (selectedSlideId) {
-            dispatch(addTextObject(selectedSlideId))
+            console.log('Adding text to slide:', selectedSlideId)
+            dispatch(addTextObject({ slideId: selectedSlideId }))
             setContextMenu(null)
         }
     }
@@ -89,7 +94,11 @@ export function Workspace(props: WorkspaceProps) {
     const handleSelectImageSource = (source: 'url' | 'device') => {
         if (source === 'device') {
             setModalState('none')
-            setShouldShowFileInput(true)
+            setTimeout(() => {
+                if (fileInputRef.current) {
+                    fileInputRef.current.click()
+                }
+            }, 0)
         } else {
             setModalState('url')
         }
@@ -97,11 +106,22 @@ export function Workspace(props: WorkspaceProps) {
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
+        console.log('File selected:', file)
+        
         if (file && selectedSlideId) {
-            if (!file.type.startsWith('image/')) return
+            if (!file.type.startsWith('image/')) {
+                return
+            }
 
+            console.log('Dispatching addImageObject with file:', file.name)
+            
             const imageUrl = URL.createObjectURL(file)
-            dispatch(addImageObject({ slideId: selectedSlideId, imageUrl }))
+            console.log('Created object URL:', imageUrl)
+            
+            dispatch(addImageObject({ 
+                slideId: selectedSlideId, 
+                imageUrl 
+            }))
             
             e.target.value = ''
         }
@@ -109,9 +129,19 @@ export function Workspace(props: WorkspaceProps) {
 
     const handleAddImageFromUrl = () => {
         if (selectedSlideId && imageUrlInput.trim()) {
-            dispatch(addImageObject({ slideId: selectedSlideId, imageUrl: imageUrlInput.trim() }))
-            setImageUrlInput("")
-            setModalState('none')
+            try {
+                new URL(imageUrlInput.trim())
+                console.log('Adding image from URL:', imageUrlInput)
+                
+                dispatch(addImageObject({ 
+                    slideId: selectedSlideId, 
+                    imageUrl: imageUrlInput.trim() 
+                }))
+                setImageUrlInput("")
+                setModalState('none')
+            } catch {
+                console.log()
+            }
         }
     }
 
@@ -124,6 +154,17 @@ export function Workspace(props: WorkspaceProps) {
         setImageUrlInput("")
     }
 
+    const getSlideWithObjects = () => {
+        if (!slide) return null
+        
+        return {
+            ...slide,
+            slideObject: slideObjects[slide.id] || []
+        }
+    }
+
+    const currentSlideWithObjects = getSlideWithObjects()
+
     return (
         <div className={styles.workspaceContainer}>
             {!props.isSlideShow && (
@@ -131,17 +172,17 @@ export function Workspace(props: WorkspaceProps) {
                     <button
                         className={styles.navButton}
                         onClick={goToPreviousSlide}
-                        disabled={props.slideIndex <= 0}
+                        disabled={slideIndex <= 0}
                     >
                         ◀ Предыдущий
                     </button>
                     <div className={styles.slideInfo}>
-                        Слайд {props.slideIndex + 1} из {slides.length}
+                        Слайд {slideIndex + 1} из {slides.length}
                     </div>
                     <button
                         className={styles.navButton}
                         onClick={goToNextSlide}
-                        disabled={props.slideIndex >= slides.length - 1}
+                        disabled={slideIndex >= slides.length - 1}
                     >
                         Следующий ▶
                     </button>
@@ -154,13 +195,13 @@ export function Workspace(props: WorkspaceProps) {
                 onClick={handleCloseContextMenu}
                 ref={workspaceRef}
             >
-                {slide ? (
+                {currentSlideWithObjects ? (
                     <>
                         <ShowSlide
-                            slide={slide}
+                            slide={currentSlideWithObjects}
                             className={styles.slide}
                             disableObjectClicks={props.isSlideShow || false}
-                            slideId={slide.id}
+                            slideId={currentSlideWithObjects.id}
                             objSelection={selectedObjects}
                         />
                         
@@ -171,6 +212,7 @@ export function Workspace(props: WorkspaceProps) {
                                     left: contextMenu.x,
                                     top: contextMenu.y
                                 }}
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 <button 
                                     className={styles.contextMenuItem}
@@ -187,15 +229,13 @@ export function Workspace(props: WorkspaceProps) {
                             </div>
                         )}
 
-                        {shouldShowFileInput && (
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                style={{ display: 'none' }}
-                                accept="image/*"
-                                onChange={handleFileSelect}
-                            />
-                        )}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                        />
 
                         {!props.isSlideShow && modalState === 'source' && (
                             <div className={styles.modalOverlay} onClick={handleCloseModal}>
@@ -262,7 +302,9 @@ export function Workspace(props: WorkspaceProps) {
                         )}
                     </>
                 ) : (
-                    <div className={styles.noSlide}>Нет слайдов</div>
+                    <div className={styles.noSlide}>
+                        {slides.length === 0 ? "Нет слайдов" : "Выберите слайд"}
+                    </div>
                 )}
             </div>
         </div>

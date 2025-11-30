@@ -7,11 +7,15 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import type { RootState } from './store/store'
 import { selectSlide } from './store/presentationSlice'
+import { useHotkeys } from './hooks/useHotKeys'
 
 function App() {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
+    const slides = useSelector((state: RootState) => state.slides.slides) 
     const [isSlideShow, setIsSlideShow] = useState(false)
+    
+    useHotkeys(isSlideShow)
     
     const handleSlideSelect = (slideId: string) => {
         dispatch(selectSlide(slideId))
@@ -19,52 +23,14 @@ function App() {
 
     const handleStartSlideShow = () => {
         setIsSlideShow(true)
-        if (presentation.slides.length > 0) {
-            const firstSlide = presentation.slides[0]
-            dispatch(selectSlide(firstSlide.id))
+        if (slides.length > 0 && !presentation.selectedSlide) {
+            dispatch(selectSlide(slides[0].id))
         }
     }
 
     const handleExitSlideShow = () => {
         setIsSlideShow(false)
     }
-
-    const slideIndex = presentation.slides.findIndex(
-        slide => slide.id === presentation.selectedSlide
-    )
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (isSlideShow) {
-                if (event.key === 'Escape') {
-                    handleExitSlideShow()
-                    return
-                }
-            }
-
-            const currentSlideIndex = presentation.slides.findIndex(
-                slide => slide.id === presentation.selectedSlide
-            )
-
-            if (event.key === 'ArrowLeft' && currentSlideIndex > 0) {
-                const prevSlide = presentation.slides[currentSlideIndex - 1]
-                dispatch(selectSlide(prevSlide.id))
-            } else if (event.key === 'ArrowRight' && currentSlideIndex < presentation.slides.length - 1) {
-                const nextSlide = presentation.slides[currentSlideIndex + 1]
-                dispatch(selectSlide(nextSlide.id))
-            }
-
-            if (isSlideShow && event.key === ' ' && currentSlideIndex < presentation.slides.length - 1) {
-                const nextSlide = presentation.slides[currentSlideIndex + 1]
-                dispatch(selectSlide(nextSlide.id))
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown)
-        }
-    }, [presentation, isSlideShow, dispatch])
 
     useEffect(() => {
         if (isSlideShow) {
@@ -77,6 +43,12 @@ function App() {
             document.body.style.overflow = 'unset'
         }
     }, [isSlideShow])
+
+    useEffect(() => {
+        if (slides.length > 0 && !presentation.selectedSlide) {
+            dispatch(selectSlide(slides[0].id))
+        }
+    }, [slides, presentation.selectedSlide, dispatch])
 
     return (
         <div className={`${styles.app} ${isSlideShow ? styles.slideShowMode : ''}`}>
@@ -94,7 +66,6 @@ function App() {
                 )}
                 
                 <Workspace 
-                    slideIndex={slideIndex}
                     isSlideShow={isSlideShow}
                     onExitSlideShow={handleExitSlideShow}
                 />
