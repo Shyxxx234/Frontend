@@ -2,9 +2,10 @@ import { ShowSlide } from "../../common/ShowSlide"
 import styles from "./workspace.module.css"
 import { useState, useRef, useEffect } from "react"
 import { useSelector, useDispatch } from 'react-redux'
-import type { RootState } from '../../store/store'
-import { selectSlide } from '../../store/presentationSlice'
 import { addTextObject, addImageObject } from '../../store/slideObjectSlice'
+import { uploadImage, uploadImageFromUrl } from "../../database/storage"
+import type { RootState } from "../../store/store"
+import { selectSlide } from "../../store/presentationSlice"
 
 type WorkspaceProps = {
     isSlideShow?: boolean,
@@ -18,16 +19,19 @@ export function Workspace(props: WorkspaceProps) {
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides.slides)
     const slideObjects = useSelector((state: RootState) => state.slideObjects.objects)
-    
+
     const selectedSlideId = presentation.selectedSlide
     const selectedObjects = presentation.selectedObjects
-    
+
     const slideIndex = slides.findIndex(slide => slide.id === selectedSlideId)
     const slide = slides[slideIndex]
-    
-    const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null)
+
+    const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null)
     const [imageUrlInput, setImageUrlInput] = useState<string>("")
     const [modalState, setModalState] = useState<ModalState>('none')
+    const [isUploading, setIsUploading] = useState(false)
+    const [uploadError, setUploadError] = useState<string | null>(null)
+
     const fileInputRef = useRef<HTMLInputElement>(null)
     const workspaceRef = useRef<HTMLDivElement>(null)
 
@@ -64,11 +68,11 @@ export function Workspace(props: WorkspaceProps) {
     const handleContextMenu = (e: React.MouseEvent) => {
         if (props.isSlideShow) return
         e.preventDefault()
-        
+
         if (!selectedSlideId) {
             return
         }
-        
+
         const rect = workspaceRef.current?.getBoundingClientRect()
         if (rect) {
             setContextMenu({
@@ -92,6 +96,7 @@ export function Workspace(props: WorkspaceProps) {
     }
 
     const handleSelectImageSource = (source: 'url' | 'device') => {
+        setUploadError(null)
         if (source === 'device') {
             setModalState('none')
             setTimeout(() => {
@@ -104,43 +109,56 @@ export function Workspace(props: WorkspaceProps) {
         }
     }
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         console.log('File selected:', file)
-        
+
         if (file && selectedSlideId) {
             if (!file.type.startsWith('image/')) {
+                setUploadError('Пожалуйста, выберите файл изображения')
                 return
             }
 
-            console.log('Dispatching addImageObject with file:', file.name)
-            
-            const imageUrl = URL.createObjectURL(file)
-            console.log('Created object URL:', imageUrl)
-            
-            dispatch(addImageObject({ 
-                slideId: selectedSlideId, 
-                imageUrl 
-            }))
-            
-            e.target.value = ''
+            setIsUploading(true)
+            setUploadError(null)
+
+            try {
+                console.log('Uploading image to storage...')
+                const imageUrl = await uploadImage(file)
+                console.log('Image uploaded to storage, URL:', imageUrl)
+
+                dispatch(addImageObject({
+                    slideId: selectedSlideId,
+                    imageUrl
+                }))
+
+                setModalState('none')
+
+            } catch (error) {
+                console.error('Error uploading image:', error)
+                setUploadError('Ошибка при загрузке изображения')
+            } finally {
+                setIsUploading(false)
+                e.target.value = ''
+            }
         }
     }
 
-    const handleAddImageFromUrl = () => {
+    const handleAddImageFromUrl = async () => {
         if (selectedSlideId && imageUrlInput.trim()) {
+            new URL(imageUrlInput.trim())
+            setIsUploading(true)
+            setUploadError(null)
             try {
-                new URL(imageUrlInput.trim())
-                console.log('Adding image from URL:', imageUrlInput)
-                
-                dispatch(addImageObject({ 
-                    slideId: selectedSlideId, 
-                    imageUrl: imageUrlInput.trim() 
+                const imageUrl = await uploadImageFromUrl(imageUrlInput.trim())
+                dispatch(addImageObject({
+                    slideId: selectedSlideId,
+                    imageUrl
                 }))
-                setImageUrlInput("")
+
                 setModalState('none')
-            } catch {
-                console.log()
+            } finally {
+                setIsUploading(false)
             }
         }
     }
@@ -152,11 +170,13 @@ export function Workspace(props: WorkspaceProps) {
     const handleCloseModal = () => {
         setModalState('none')
         setImageUrlInput("")
+        setUploadError(null)
+        setIsUploading(false)
     }
 
     const getSlideWithObjects = () => {
         if (!slide) return null
-        
+
         return {
             ...slide,
             slideObject: slideObjects[slide.id] || []
@@ -204,9 +224,9 @@ export function Workspace(props: WorkspaceProps) {
                             slideId={currentSlideWithObjects.id}
                             objSelection={selectedObjects}
                         />
-                        
+
                         {!props.isSlideShow && contextMenu && (
-                            <div 
+                            <div
                                 className={styles.contextMenu}
                                 style={{
                                     left: contextMenu.x,
@@ -214,13 +234,13 @@ export function Workspace(props: WorkspaceProps) {
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <button 
+                                <button
                                     className={styles.contextMenuItem}
                                     onClick={handleAddText}
                                 >
                                     Вставить текст
                                 </button>
-                                <button 
+                                <button
                                     className={styles.contextMenuItem}
                                     onClick={handleAddImageClick}
                                 >
@@ -242,23 +262,31 @@ export function Workspace(props: WorkspaceProps) {
                                 <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                                     <h3>Выберите источник изображения</h3>
                                     <div className={styles.sourceButtons}>
-                                        <button 
+                                        <button
                                             className={styles.sourceButton}
                                             onClick={() => handleSelectImageSource('url')}
+                                            disabled={isUploading}
                                         >
                                             Из URL
                                         </button>
-                                        <button 
+                                        <button
                                             className={styles.sourceButton}
                                             onClick={() => handleSelectImageSource('device')}
+                                            disabled={isUploading}
                                         >
                                             С устройства
                                         </button>
                                     </div>
+                                    {isUploading && (
+                                        <div className={styles.uploadingMessage}>
+                                            Загрузка изображения...
+                                        </div>
+                                    )}
                                     <div className={styles.modalButtons}>
-                                        <button 
+                                        <button
                                             className={styles.modalButton}
                                             onClick={handleCloseModal}
+                                            disabled={isUploading}
                                         >
                                             Отмена
                                         </button>
@@ -281,18 +309,30 @@ export function Workspace(props: WorkspaceProps) {
                                             if (e.key === 'Enter') handleAddImageFromUrl()
                                         }}
                                         autoFocus
+                                        disabled={isUploading}
                                     />
+                                    {uploadError && (
+                                        <div className={styles.errorMessage}>
+                                            {uploadError}
+                                        </div>
+                                    )}
+                                    {isUploading && (
+                                        <div className={styles.uploadingMessage}>
+                                            Загрузка изображения...
+                                        </div>
+                                    )}
                                     <div className={styles.modalButtons}>
-                                        <button 
+                                        <button
                                             className={styles.modalButton}
                                             onClick={handleAddImageFromUrl}
-                                            disabled={!imageUrlInput.trim()}
+                                            disabled={!imageUrlInput.trim() || isUploading}
                                         >
-                                            Добавить
+                                            {isUploading ? 'Загрузка...' : 'Добавить'}
                                         </button>
-                                        <button 
+                                        <button
                                             className={styles.modalButton}
                                             onClick={handleCloseModal}
+                                            disabled={isUploading}
                                         >
                                             Отмена
                                         </button>

@@ -53,6 +53,19 @@ const slideSlice = createSlice({
         }
       }
     },
+
+    // Добавляем новый редьюсер для изображений на фон
+    changeBackgroundToImage: (state, action: PayloadAction<{ imageUrl: string; slideId: string }>) => {
+      const { imageUrl, slideId } = action.payload
+      const slide = state.slides.find(s => s.id === slideId)
+
+      if (slide) {
+        slide.background = {
+          type: 'picture',
+          src: imageUrl
+        }
+      }
+    },
   }
 })
 
@@ -62,6 +75,7 @@ export const {
   replaceSlide,
   restoreSlides,
   changeBackgroundToColor,
+  changeBackgroundToImage,
 } = slideSlice.actions
 
 export default slideSlice.reducer

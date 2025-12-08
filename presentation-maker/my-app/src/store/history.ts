@@ -1,10 +1,9 @@
 import type { PresentationData } from "./store"
 
-
 class HistoryManager {
-  private past: PresentationData[] = []
-  private present: PresentationData | null = null
-  private future: PresentationData[] = []
+  past: PresentationData[] = []
+  present: PresentationData | null = null
+  future: PresentationData[] = []
   private readonly maxSize = 50
 
   saveState(state: PresentationData) {

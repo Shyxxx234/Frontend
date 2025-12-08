@@ -25,5 +25,5 @@
     "noUncheckedSideEffectImports": true,
     "noImplicitAny": true,
   },
-  "include": ["src", "../test.js", "../test.ts", "../main.ts", "test.ts", "../typeAndFunctions.ts", "src/store/types.ts", "typeAndFunctions.js"]
+  "include": ["src", "../test.js", "../test.ts", "../main.ts", "test.ts", "../typeAndFunctions.ts", "src/login/store/types.tspes.ts", "typeAndFunctions.js"]
 }

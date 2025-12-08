@@ -1,0 +1,184 @@
+.modal_container {
+    position: absolute;
+    background-color: #16161f95;
+    width: 100vw;
+    height: 100vh;
+}
+
+.modal {
+    position: absolute;
+    top: 25%;
+    left: 30%;
+    border-radius: 12px;
+    width: 800px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    padding: 24px 32px;
+    background: linear-gradient(135deg, #171a29 0%, #30114e 100%);
+    color: white;
+}
+
+.title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+}
+
+.subtitle {
+    margin-top: 8px;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.content {
+    padding: 24px;
+    flex: 1;
+    background: linear-gradient(60deg, #171a29 0%, #30114e 100%);
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+.closeButton {
+    position: absolute;
+    top: 8%;
+    left: 90%;
+}
+
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.loadingText {
+    color: #6c757d;
+    font-size: 16px;
+    margin: 0;
+}
+
+.emptyContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.emptyIcon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.emptyMessage {
+    color: #6c757d;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.emptySubtext {
+    color: #adb5bd;
+    font-size: 14px;
+    margin: 0;
+}
+
+.presentationsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    max-height: 300px;
+}
+
+.presentationCard {
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background-color: #6b6592;
+}
+
+.presentationCard:hover {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.408);
+}
+
+.presentationIcon {
+    font-size: 32px;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.presentationTitle {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.presentationDate {
+    font-size: 12px;
+    color: #adb5bd;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.selectButton {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: 30px;
+}
+
+.selectButton:hover {
+    background-color: #218838;
+}
+
+.footer {
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #171a29 0%, #30114e 100%);
+}
+
+.newButton {
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.newButton:hover {
+    background-color: #5a6fd8;
+}

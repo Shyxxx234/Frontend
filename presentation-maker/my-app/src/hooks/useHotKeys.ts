@@ -1,9 +1,9 @@
 import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { historyManager } from '../store/history'
 import type { RootState } from '../store/store'
 import { selectSlide } from '../store/presentationSlice'
 import { removeSlide } from '../store/slideSlice'
-import { historyManager } from '../store/history'
 
 export const useHotkeys = (isSlideShow: boolean) => {
     const dispatch = useDispatch()
@@ -88,7 +88,7 @@ export const useHotkeys = (isSlideShow: boolean) => {
             }
 
             if (!isSlideShow) {
-                if ((event.key === 'Delete' || event.key === 'Backspace') &&
+                if ((event.key === 'Delete') &&
                     !event.ctrlKey && !event.metaKey && !event.altKey) {
                     event.preventDefault()
                     handleDeleteSlide()

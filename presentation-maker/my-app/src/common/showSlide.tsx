@@ -1,12 +1,15 @@
-import type { Slide, SlideObject } from "../store/types"
 import { useDispatch, useSelector } from 'react-redux'
-import type { RootState } from '../store/store'
-import { calculateResize } from "../store/utils"
-import { selectObject } from "../store/presentationSlice"
-
 import React, { useState, useRef, useEffect } from "react"
 import styles from "./ShowSlide.module.css"
-import { moveObject, resizeObject } from "../store/slideObjectSlice"
+import type { Slide, SlideObject } from '../store/types'
+import type { RootState } from '../store/store'
+import { selectObject } from '../store/presentationSlice'
+import { 
+    moveObject, 
+    resizeObject, 
+    changePlainTextContent 
+} from '../store/slideObjectSlice'
+import { calculateResize } from '../store/utils'
 
 type ShowSlideProps = {
     slide: Slide
@@ -37,7 +40,10 @@ export function ShowSlide(props: ShowSlideProps) {
     const [resizingId, setResizingId] = useState<string | null>(null)
     const [tempTransform, setTempTransform] = useState<TempTransform | null>(null)
     const [isDragging, setIsDragging] = useState(false)
+    const [editingTextId, setEditingTextId] = useState<string | null>(null)
+    const [initialContent, setInitialContent] = useState<string>('')
     const slideRef = useRef<HTMLDivElement>(null)
+    const textEditRef = useRef<HTMLDivElement>(null)
     const tempTransformRef = useRef<TempTransform | null>(null)
 
     useEffect(() => {
@@ -48,7 +54,19 @@ export function ShowSlide(props: ShowSlideProps) {
         if (!isDragging && !resizingId) {
             setTempTransform(null)
         }
-    }, [isDragging, resizingId]) // Убрали slideObjects из зависимостей
+    }, [isDragging, resizingId])
+
+    useEffect(() => {
+        if (editingTextId && textEditRef.current) {
+            textEditRef.current.focus()
+            const range = document.createRange()
+            const sel = window.getSelection()
+            range.selectNodeContents(textEditRef.current)
+            range.collapse(false)
+            sel?.removeAllRanges()
+            sel?.addRange(range)
+        }
+    }, [editingTextId])
 
     const handleObjectClick = (e: React.MouseEvent, objId: string) => {
         if (props.disableObjectClicks || resizingId) return
@@ -67,13 +85,59 @@ export function ShowSlide(props: ShowSlideProps) {
     const handleSlideClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget && !props.disableObjectClicks) {
             dispatch(selectObject([]))
+            stopEditingText()
         }
     }
 
+    const startTextEditing = (e: React.MouseEvent, obj: SlideObject) => {
+        if (props.disableObjectClicks || resizingId) return
+        
+        e.stopPropagation()
+        setEditingTextId(obj.id)
+        if (obj.type === 'plain_text') {
+            setInitialContent(obj.content)
+        }
+        dispatch(selectObject([obj.id]))
+    }
+
+    const stopEditingText = () => {
+        if (editingTextId && textEditRef.current) {
+            const newContent = textEditRef.current.textContent || ''
+            const obj = slideObjects.find(o => o.id === editingTextId)
+            if (obj && obj.type === 'plain_text' && newContent !== initialContent) {
+                dispatch(changePlainTextContent({
+                    content: newContent,
+                    objectId: editingTextId,
+                    slideId: props.slideId
+                }))
+            }
+            setEditingTextId(null)
+            setInitialContent('')
+        }
+    }
+
+    const handleTextKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            e.stopPropagation()
+            e.preventDefault()
+            setEditingTextId(null)
+            setInitialContent('')
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            stopEditingText()
+        }
+        // Разрешаем все остальные клавиши, включая backspace
+    }
+
+    const handleTextInput = () => {
+        // Пустая функция для обработки изменений
+    }
+
     const startDrag = (e: React.MouseEvent, objId: string) => {
-        if (props.disableObjectClicks) return
+        if (props.disableObjectClicks || editingTextId === objId) return
 
         e.stopPropagation()
+        stopEditingText()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
         if (!slideRect) return
@@ -99,7 +163,7 @@ export function ShowSlide(props: ShowSlideProps) {
                 objectId: objId,
                 x: newX,
                 y: newY,
-                width: selectedObj.rect.width,
+                width: selectedObj.rect.width,  
                 height: selectedObj.rect.height
             })
         }
@@ -130,9 +194,10 @@ export function ShowSlide(props: ShowSlideProps) {
     }
 
     const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
-        if (props.disableObjectClicks) return
+        if (props.disableObjectClicks || editingTextId === objId) return
 
         e.stopPropagation()
+        stopEditingText()
 
         const slideRect = slideRef.current?.getBoundingClientRect()
         if (!slideRect) return
@@ -258,13 +323,15 @@ export function ShowSlide(props: ShowSlideProps) {
             {slideObjects.map(obj => {
                 const isSelected = objSelection.includes(obj.id)
                 const isMultipleSelected = isSelected && objSelection.length > 1
+                const isEditing = editingTextId === obj.id && obj.type === 'plain_text'
                 const rect = getObjectRect(obj)
 
                 const objectClasses = [
                     styles.slideObject,
                     isSelected ? styles.selected : '',
                     isMultipleSelected ? styles.multipleSelected : '',
-                    props.disableObjectClicks ? styles.slideShowMode : ''
+                    props.disableObjectClicks ? styles.slideShowMode : '',
+                    isEditing ? styles.editing : ''
                 ].join(' ')
 
                 return (
@@ -278,22 +345,44 @@ export function ShowSlide(props: ShowSlideProps) {
                             top: rect.y,
                             width: rect.width,
                             height: rect.height,
-                            cursor: props.disableObjectClicks ? 'default' : 'move'
+                            cursor: props.disableObjectClicks ? 'default' : (isEditing ? 'text' : 'move')
                         }}
                     >
                         {obj.type === 'plain_text' && (
-                            <div
-                                className={styles.textObject}
-                                style={{
-                                    fontFamily: obj.fontFamily,
-                                    fontWeight: obj.weight,
-                                    fontSize: `${obj.scale}em`,
-                                    cursor: props.disableObjectClicks ? 'default' : 'text'
-                                }}
-                                contentEditable={false}
-                            >
-                                {obj.content}
-                            </div>
+                            <>
+                                {isEditing ? (
+                                    <div
+                                        ref={textEditRef}
+                                        className={styles.textEditor}
+                                        style={{
+                                            fontFamily: obj.fontFamily,
+                                            fontWeight: obj.weight,
+                                            fontSize: `${obj.scale}em`,
+                                            outline: 'none'
+                                        }}
+                                        contentEditable={true}
+                                        suppressContentEditableWarning={true}
+                                        onBlur={stopEditingText}
+                                        onKeyDown={handleTextKeyDown}
+                                        onInput={handleTextInput}
+                                    >
+                                        {initialContent}
+                                    </div>
+                                ) : (
+                                    <div
+                                        className={styles.textObject}
+                                        style={{
+                                            fontFamily: obj.fontFamily,
+                                            fontWeight: obj.weight,
+                                            fontSize: `${obj.scale}em`,
+                                            cursor: props.disableObjectClicks ? 'default' : 'text'
+                                        }}
+                                        onDoubleClick={(e) => startTextEditing(e, obj)}
+                                    >
+                                        {obj.content}
+                                    </div>
+                                )}
+                            </>
                         )}
                         {obj.type === 'picture' && (
                             <img
@@ -307,7 +396,7 @@ export function ShowSlide(props: ShowSlideProps) {
                             />
                         )}
 
-                        {!props.disableObjectClicks && isSelected && objSelection.length === 1 && (
+                        {!props.disableObjectClicks && isSelected && objSelection.length === 1 && !isEditing && (
                             <>
                                 <ResizeHandler direction="nw" objId={obj.id} />
                                 <ResizeHandler direction="ne" objId={obj.id} />

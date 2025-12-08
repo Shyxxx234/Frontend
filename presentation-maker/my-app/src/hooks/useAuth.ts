@@ -1,58 +1,44 @@
-import { useState, useEffect } from 'react';
-import { getCurrentUser, signIn, register, signOut } from '../login/login';
-import type { Models } from 'appwrite';
+import { useState, useEffect } from 'react'
+import { getCurrentUser, signIn, register, signOut } from '../login/login'
+import type { Models } from 'appwrite'
 
 export const useAuth = () => {
-  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showLogin, setShowLogin] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
+  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showLogin, setShowLogin] = useState(false)
+  const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    checkAuthStatus()
+  }, [])
 
   const checkAuthStatus = async () => {
     try {
-      const userData = await getCurrentUser();
-      setUser(userData);
-    } catch {
-      setUser(null);
+      const userData = await getCurrentUser()
+      setUser(userData)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const login = async (email: string, password: string) => {
-    try {
-      await signIn(email, password);
-      const userData = await getCurrentUser();
-      setUser(userData);
-      setShowLogin(false);
-    } catch (error) {
-      alert('Ошибка входа: ' + error);
-    }
-  };
+    await signIn(email, password)
+    const userData = await getCurrentUser()
+    setUser(userData)
+    setShowLogin(false)
+  }
 
   const registerUser = async (email: string, password: string) => {
-    try {
-      await register(email, password);
-      const userData = await getCurrentUser();
-      setUser(userData);
-      setShowRegister(false);
-    } catch (error) {
-      alert('Ошибка регистрации: ' + error);
-    }
-  };
+    await register(email, password)
+    const userData = await getCurrentUser()
+    setUser(userData)
+    setShowRegister(false)
+  }
 
   const logout = async () => {
-    try {
-      await signOut();
-      setUser(null);
-    } catch (error) {
-      alert('Ошибка выхода: ' + error);
-    }
-  };
+    await signOut()
+    setUser(null)
+  }
 
   return {
     user,
@@ -64,5 +50,5 @@ export const useAuth = () => {
     login,
     register: registerUser,
     logout,
-  };
-};
+  }
+}

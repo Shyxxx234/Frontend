@@ -1,20 +1,18 @@
 import type React from "react"
 import { Button } from "../../common/Button"
-import { createBlankSlide } from "../../store/utils"
 import styles from "./sidePanel.module.css"
 import { useSelector, useDispatch } from 'react-redux'
-import type { RootState } from '../../store/store'
-import { addSlide, removeSlide, changeBackgroundToColor } from '../../store/slideSlice'
-import { addImageObject, removeObject } from '../../store/slideObjectSlice'
-import { selectSlide } from '../../store/presentationSlice'
+import { removeObject } from '../../store/slideObjectSlice'
 import { useRef, useState } from "react"
-import { historyManager } from "../../store/history"
 import { useAuth } from '../../hooks/useAuth'
+import type { RootState } from "../../store/store"
+import { selectSlide } from "../../store/presentationSlice"
+import { changeBackgroundToColor } from "../../store/slideSlice"
+import { historyManager } from "../../store/history"
 
 export function SidePanel() {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
-    const slides = useSelector((state: RootState) => state.slides.slides)
     const selectedSlideId = presentation.selectedSlide
     const selectedObjects = presentation.selectedObjects
 
@@ -35,41 +33,7 @@ export function SidePanel() {
 
     const colorTimeoutRef = useRef<number | null>(null)
 
-    const handleAddSlide = () => {
-        const newSlide = createBlankSlide()
-        dispatch(selectSlide(newSlide.id))
-        dispatch(addSlide({
-            slide: newSlide,
-            idx: slides.length
-        }))
-    }
-
-    const handleRemoveSlide = () => {
-        if (selectedSlideId) {
-            const currentSlideIndex = slides.findIndex(slide => slide.id === selectedSlideId)
-            
-            if (slides.length > 1) {
-                let newSelectedSlideId: string
-                if (currentSlideIndex === slides.length - 1) {
-                    newSelectedSlideId = slides[currentSlideIndex - 1].id
-                } 
-                else {
-                    newSelectedSlideId = slides[currentSlideIndex + 1].id
-                }
-                dispatch(selectSlide(newSelectedSlideId))
-            }
-            dispatch(removeSlide(selectedSlideId))
-        }
-    }
-
-    const handleAddImage = () => {
-        if (selectedSlideId) {
-            const imageUrl = prompt("Введите URL изображения:", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWaFnicAytoRPP_Esi8F-TtEqcTnxdIh_sqA&s")
-            if (imageUrl) {
-                dispatch(addImageObject({ slideId: selectedSlideId, imageUrl }))
-            }
-        }
-    }
+    
 
     const handleRemoveObject = () => {
         if (selectedSlideId && selectedObjects.length > 0) {
@@ -134,8 +98,8 @@ export function SidePanel() {
                     <div style={{ fontSize: '12px', color: '#666' }}>Загрузка...</div>
                 ) : user ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ fontSize: '12px', color: '#333' }}>
-                            👋 {user.name || user.email}
+                        <div style={{ fontSize: '30px', color: '#ffffffff' }}>
+                            {user.name || user.email}
                         </div>
                         <Button
                             className={styles.button}
@@ -259,28 +223,7 @@ export function SidePanel() {
             </div>
 
             <div className={styles.section}>
-                <h3 className={styles.text}>Слайды</h3>
-                <Button className={styles.button} onClick={handleAddSlide}>
-                    + Добавить слайд
-                </Button>
-                <Button
-                    className={styles.button}
-                    onClick={handleRemoveSlide}
-                    disabled={!selectedSlideId || slides.length <= 1}
-                >
-                    - Удалить слайд
-                </Button>
-            </div>
-
-            <div className={styles.section}>
                 <h3 className={styles.text}>Объекты</h3>
-                <Button
-                    className={styles.button}
-                    onClick={handleAddImage}
-                    disabled={!selectedSlideId}
-                >
-                    Добавить изображение
-                </Button>
                 <Button
                     className={styles.button}
                     onClick={handleRemoveObject}

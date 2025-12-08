@@ -31,7 +31,7 @@
 .imageObject {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: fill;
 }
 
 .resizeHandle {
@@ -101,4 +101,21 @@
     width: 6px;
     height: 12px;
     cursor: e-resize;
+}
+
+.textEditor {
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    background: none;
+    outline: none;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.editing {
+    z-index: 10;
 }

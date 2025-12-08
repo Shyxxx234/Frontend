@@ -1,85 +1,57 @@
 import type { Middleware } from '@reduxjs/toolkit'
-import type { PresentationData } from '../store/store'
+import type { PresentationData, RootState } from '../store/store'
 import { historyManager } from '../store/history'
 
-const CONTENT_CHANGE_ACTIONS = [
-  'slides/addSlide',
-  'slides/removeSlide',
-  'slides/replaceSlide',
-  'slides/changeBackgroundToColor',
-  'slideObjects/addTextObject',
-  'slideObjects/addImageObject',
-  'slideObjects/removeObject',
-  'slideObjects/moveObject',
-  'slideObjects/resizeObject',
-  'slideObjects/changePlainTextContent',
-  'slideObjects/changePlainTextFontFamily',
-  'slideObjects/changePlainTextScale',
-  'presentation/changePresentationName'
-]
-
 export const historyMiddleware: Middleware = (store) => (next) => (action) => {
-  const actionObj = action as { type?: string }
+  const actionObj = action as { type?: string; meta?: { skipHistory?: boolean } }
+  const actionType = actionObj.type
   
-  // Обработка undo/redo
-  if (actionObj.type === 'history/undo') {
-    const previousState = historyManager.undo()
-    if (previousState) {
-      const { presentation, slides, slideObjects } = previousState
+  if (actionType === 'history/undo' || actionType === 'history/redo') {
+    const newState = actionType === 'history/undo' 
+      ? historyManager.undo() 
+      : historyManager.redo()
+    
+    if (newState) {
+      const { presentation, slides, slideObjects } = newState
       
       store.dispatch({
         type: 'slides/restoreSlides',
-        payload: slides
+        payload: slides,
+        meta: { skipHistory: true }
       })
       
       store.dispatch({
         type: 'slideObjects/restoreObjects', 
-        payload: slideObjects
+        payload: slideObjects,
+        meta: { skipHistory: true }
       })
       
       store.dispatch({
         type: 'presentation/restorePresentation',
-        payload: presentation
+        payload: presentation,
+        meta: { skipHistory: true }
       })
     }
     return next(action)
   }
   
-  if (actionObj.type === 'history/redo') {
-    const nextState = historyManager.redo()
-    if (nextState) {
-      const { presentation, slides, slideObjects } = nextState
-      
-      store.dispatch({
-        type: 'slides/restoreSlides',
-        payload: slides
-      })
-      
-      store.dispatch({
-        type: 'slideObjects/restoreObjects', 
-        payload: slideObjects
-      })
-      
-      store.dispatch({
-        type: 'presentation/restorePresentation',
-        payload: presentation
-      })
-    }
+  if (actionObj.meta?.skipHistory) {
     return next(action)
   }
   
+  const stateBefore = store.getState() as RootState
   const result = next(action)
+  const stateAfter = store.getState() as RootState
   
-  // Сохраняем состояние после изменений
-  if (actionObj.type && CONTENT_CHANGE_ACTIONS.includes(actionObj.type)) {
-    const currentState = store.getState()
-    
+  const slidesChanged = stateBefore.slides !== stateAfter.slides
+  const titleChanged = stateBefore.presentation.title !== stateAfter.presentation.title
+  
+  if (slidesChanged || titleChanged) {
     const presentationData: PresentationData = {
-      presentation: currentState.presentation,
-      slides: currentState.slides,
-      slideObjects: currentState.slideObjects
+      presentation: stateAfter.presentation,
+      slides: stateAfter.slides,
+      slideObjects: stateAfter.slideObjects
     }
-    
     historyManager.saveState(presentationData)
   }
   

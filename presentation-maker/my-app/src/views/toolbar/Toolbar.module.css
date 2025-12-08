@@ -20,6 +20,7 @@
     background-color: transparent;
     margin-left: 10px;
 }
+
 .title {
     border-radius: 10px;
     width: auto;
@@ -37,4 +38,21 @@
 
 .slide_show {
     margin-right: 10px;
+}
+
+.file_menu {
+    position: absolute;
+    top: 100%;
+    left: 0px;
+    background-color: #16111E;
+    border: 1px solid white;
+    border-radius: 4px;
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.new_presentation {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid white;
 }
