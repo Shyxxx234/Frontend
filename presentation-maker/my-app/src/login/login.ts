@@ -1,4 +1,5 @@
 import { Client, Account } from "appwrite"
+import { generateTimestampId } from "../store/utils"
 
 const client = new Client()
     .setEndpoint("https://nyc.cloud.appwrite.io/v1")
@@ -15,12 +16,12 @@ async function signIn(email: string, password: string) {
 }
 
 async function register(email: string, password: string, name?: string) {
-    const user = await account.create(
-        'unique()',
+    const user = await account.create({
+        userId: generateTimestampId(),
         email,
         password,
         name
-    )
+    })
     console.log(user)
     return user
 }
@@ -31,7 +32,9 @@ async function getCurrentUser() {
 }
 
 async function signOut() {
-    await account.deleteSession('current')
+    await account.deleteSession({
+        sessionId: 'current'
+    })
 }
 
 export {

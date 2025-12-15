@@ -6,12 +6,15 @@ let saveTimeout: number | null = null
 const SAVE_DELAY = 10000
 
 export const autoSaveMiddleware: Middleware = (store) => (next) => (action) => {
-    const before = store.getState() as RootState
+    const stateBefore = store.getState() as RootState
     const result = next(action)
-    const after = store.getState() as RootState
+    const stateAfter = store.getState() as RootState
 
-    const changed = before.presentation.title !== after.presentation.title || before.slides !== after.slides
-    if (changed) {
+    const slidesChanged = stateBefore.slides !== stateAfter.slides
+    const slideObjectsChanged = stateBefore.slideObjects !== stateAfter.slideObjects
+    const titleChanged = stateBefore.presentation.title !== stateAfter.presentation.title
+
+    if (slidesChanged || titleChanged || slideObjectsChanged) {
         if (saveTimeout) clearTimeout(saveTimeout)
 
         saveTimeout = window.setTimeout(async () => {

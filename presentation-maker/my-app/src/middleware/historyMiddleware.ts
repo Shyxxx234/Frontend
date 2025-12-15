@@ -44,9 +44,10 @@ export const historyMiddleware: Middleware = (store) => (next) => (action) => {
   const stateAfter = store.getState() as RootState
   
   const slidesChanged = stateBefore.slides !== stateAfter.slides
+  const slideObjectsChanged = stateBefore.slideObjects !== stateAfter.slideObjects
   const titleChanged = stateBefore.presentation.title !== stateAfter.presentation.title
   
-  if (slidesChanged || titleChanged) {
+  if (slidesChanged || titleChanged || slideObjectsChanged) {
     const presentationData: PresentationData = {
       presentation: stateAfter.presentation,
       slides: stateAfter.slides,

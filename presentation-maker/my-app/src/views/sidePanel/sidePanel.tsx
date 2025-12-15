@@ -3,11 +3,9 @@ import { Button } from "../../common/Button"
 import styles from "./sidePanel.module.css"
 import { useSelector, useDispatch } from 'react-redux'
 import { removeObject } from '../../store/slideObjectSlice'
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { useAuth } from '../../hooks/useAuth'
 import type { RootState } from "../../store/store"
-import { selectSlide } from "../../store/presentationSlice"
-import { changeBackgroundToColor } from "../../store/slideSlice"
 import { historyManager } from "../../store/history"
 
 export function SidePanel() {
@@ -31,7 +29,6 @@ export function SidePanel() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const colorTimeoutRef = useRef<number | null>(null)
 
     
 
@@ -40,21 +37,6 @@ export function SidePanel() {
             const objectId = selectedObjects[0]
             dispatch(removeObject({ objectId, slideId: selectedSlideId }))
         }
-    }
-
-    const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const color = e.target.value
-
-        if (colorTimeoutRef.current) {
-            clearTimeout(colorTimeoutRef.current)
-        }
-        dispatch(selectSlide(selectedSlideId))
-
-        colorTimeoutRef.current = window.setTimeout(() => {
-            if (selectedSlideId) {
-                dispatch(changeBackgroundToColor({ color, slideId: selectedSlideId }))
-            }
-        }, 300)
     }
 
     const handleLoginSubmit = (e: React.FormEvent) => {
@@ -232,15 +214,6 @@ export function SidePanel() {
                     Удалить объект
                 </Button>
                 <div style={{ marginTop: '10px' }}>
-                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px' }}>
-                        Цвет фона:
-                    </label>
-                    <input
-                        type="color"
-                        onChange={handleColorChange}
-                        disabled={!selectedSlideId}
-                        style={{ width: '100%' }}
-                    />
                 </div>
             </div>
         </div>

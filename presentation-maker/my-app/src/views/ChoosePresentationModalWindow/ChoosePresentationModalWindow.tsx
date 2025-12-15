@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from "react"
 import { getUserPresentations, loadPresentation, createEmptyPresentation } from "../../database/database"
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { restoreObjects } from '../../store/slideObjectSlice'
 import styles from "./ChoosePresentationModalWindow.module.css"
 import { restorePresentation } from "../../store/presentationSlice"
 import { restoreSlides } from "../../store/slideSlice"
+import type { RootState } from "../../store/store"
 
 type ChoosePresentationModalWindowProps = {
     onClose: () => void
@@ -22,17 +23,16 @@ export function ChoosePresentationModalWindow({ onClose }: ChoosePresentationMod
     const [presentations, setPresentations] = useState<Presentation[]>([])
     const [loading, setLoading] = useState(true)
     const [creating, setCreating] = useState(false)
+    const slides = useSelector((state: RootState) => state.slides.slides)
 
     const handleEscape = useCallback((event: KeyboardEvent) => {
-        if (event.key === 'Escape') {
+        if ((event.key === 'Escape') && (slides.length != 0)) {
             onClose()
         }
-    }, [onClose])
+    }, [onClose, slides.length])
 
     useEffect(() => {
         document.addEventListener('keydown', handleEscape)
-
-
         return () => {
             document.removeEventListener('keydown', handleEscape)
         }
@@ -94,9 +94,7 @@ export function ChoosePresentationModalWindow({ onClose }: ChoosePresentationMod
     const handleNewPresentation = async () => {
         try {
             setCreating(true)
-
             const result = await createEmptyPresentation()
-
             const newPresentationId = (result)?.$id
 
             if (newPresentationId) {
@@ -106,7 +104,6 @@ export function ChoosePresentationModalWindow({ onClose }: ChoosePresentationMod
                     dispatch(restorePresentation(presentationData.presentation))
                     dispatch(restoreSlides(presentationData.slides))
                     dispatch(restoreObjects(presentationData.slideObjects))
-
                 }
             }
             onClose()
@@ -170,7 +167,7 @@ export function ChoosePresentationModalWindow({ onClose }: ChoosePresentationMod
                                         className={styles.presentationCard}
                                         onClick={() => handleSelectPresentation(presentation)}
                                     >
-                                        <div className={styles.presentationIcon}> 
+                                        <div className={styles.presentationIcon}>
 
                                         </div>
                                         <div className={styles.presentationInfo}>
@@ -202,6 +199,7 @@ export function ChoosePresentationModalWindow({ onClose }: ChoosePresentationMod
                         <button
                             className={styles.cancelButton}
                             onClick={handleCloseModal}
+                            disabled={slides.length == 0}
                         >
                             Отмена
                         </button>

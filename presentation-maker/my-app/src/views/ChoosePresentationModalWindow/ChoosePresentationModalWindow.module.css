@@ -1,8 +1,9 @@
 .modal_container {
     position: absolute;
-    background-color: #16161f95;
+    background-color: #16161F95;
     width: 100vw;
     height: 100vh;
+    z-index: 100;
 }
 
 .modal {
@@ -20,7 +21,7 @@
 
 .header {
     padding: 24px 32px;
-    background: linear-gradient(135deg, #171a29 0%, #30114e 100%);
+    background: linear-gradient(135deg, #171A29 0%, #30114E 100%);
     color: white;
 }
 
@@ -40,7 +41,7 @@
 .content {
     padding: 24px;
     flex: 1;
-    background: linear-gradient(60deg, #171a29 0%, #30114e 100%);
+    background: linear-gradient(60deg, #171A29 0%, #30114E 100%);
     overflow-y: auto;
     max-height: 50vh;
 }
@@ -82,13 +83,13 @@
 }
 
 .emptyMessage {
-    color: #6c757d;
+    color: #6C757D;
     font-size: 18px;
     margin-bottom: 8px;
 }
 
 .emptySubtext {
-    color: #adb5bd;
+    color: #ADB5BD;
     font-size: 14px;
     margin: 0;
 }
@@ -108,7 +109,8 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    background-color: #6b6592;
+    background-color: #6B6592;
+    width: 90%;
 }
 
 .presentationCard:hover {
@@ -140,7 +142,7 @@
 }
 
 .selectButton {
-    background-color: #28a745;
+    background-color: #28A745;
     color: white;
     border: none;
     border-radius: 4px;
@@ -149,7 +151,6 @@
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-left: 30px;
 }
 
 .selectButton:hover {
@@ -161,11 +162,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #171a29 0%, #30114e 100%);
+    background: linear-gradient(135deg, #171A29 0%, #30114E 100%);
 }
 
 .newButton {
-    background-color: #667eea;
+    background-color: #667EEA;
     color: white;
     border: none;
     border-radius: 6px;
@@ -180,5 +181,9 @@
 }
 
 .newButton:hover {
-    background-color: #5a6fd8;
+    background-color: #5A6FD8;
+}
+
+.presentationInfo {
+    width: 100%;
 }

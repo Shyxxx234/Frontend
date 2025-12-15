@@ -1,4 +1,5 @@
 import { Client, Storage } from "appwrite"
+import { generateTimestampId } from "../store/utils"
 
 export const Endpoint = 'https://nyc.cloud.appwrite.io/v1'
 export const ProjectID = '692c3653001826a25ad9'
@@ -8,12 +9,12 @@ const client = new Client().setEndpoint(Endpoint).setProject(ProjectID)
 const storage = new Storage(client)
 
 export async function uploadImage(file: File): Promise<string> {
-    const result = await storage.createFile(
-        StorageID,
-        'unique()',
-        file,
-    )
-    const fileUrl = `${Endpoint}/storage/buckets/${StorageID}/files/${result.$id}/view?project=${ProjectID}`
+    const result = await storage.createFile({
+        bucketId: StorageID,
+        fileId: generateTimestampId(),
+        file: file,
+    }) 
+    const fileUrl = storage.getFileView({bucketId: StorageID, fileId: result.$id})
     return fileUrl
 }
 
@@ -26,5 +27,5 @@ export async function uploadImageFromUrl(imageUrl: string): Promise<string> {
 }
 
 export async function deleteImage(fileId: string): Promise<void> {
-    await storage.deleteFile(StorageID, fileId)
+    await storage.deleteFile({bucketId: StorageID, fileId})
 }

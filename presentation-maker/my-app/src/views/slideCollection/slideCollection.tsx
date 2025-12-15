@@ -86,7 +86,6 @@ export function SlideCollection(props: SlideCollectionProps) {
         e.preventDefault()
         e.stopPropagation()
         
-        // Позиционируем меню рядом с курсором
         setContextMenu({
             visible: true,
             x: e.clientX,
@@ -95,21 +94,18 @@ export function SlideCollection(props: SlideCollectionProps) {
             slideIndex: index
         })
         
-        // Выделяем слайд при открытии контекстного меню
         dispatch(selectSlide(slideId))
         props.onSlideSelect(slideId)
         
-        // Сохраняем ID слайда для изменения цвета
         setSelectedSlideIdForColor(slideId)
     }
 
     const handleChangeBackgroundColor = () => {
         if (!contextMenu || !selectedSlideIdForColor) return
         
-        // Сохраняем позицию для цветового пикера
         setColorPickerPosition({
             x: contextMenu.x,
-            y: contextMenu.y + 120 // Смещаем вниз от меню
+            y: contextMenu.y + 120 
         })
         setShowColorPicker(true)
         closeContextMenu()
@@ -120,7 +116,6 @@ export function SlideCollection(props: SlideCollectionProps) {
         
         if (!selectedSlideIdForColor) return
         
-        // Используем таймаут для дебаунса
         if (colorTimeoutRef.current) {
             clearTimeout(colorTimeoutRef.current)
         }
@@ -138,7 +133,6 @@ export function SlideCollection(props: SlideCollectionProps) {
     const handleAddImageBackground = () => {
         if (!selectedSlideIdForColor) return
         
-        // Создаем input для выбора файла
         const input = document.createElement('input')
         input.type = 'file'
         input.accept = 'image/*'
@@ -147,10 +141,8 @@ export function SlideCollection(props: SlideCollectionProps) {
             const target = e.target as HTMLInputElement
             const file = target.files?.[0]
             if (file && selectedSlideIdForColor) {
-                // Создаем URL для выбранного изображения
                 const imageUrl = URL.createObjectURL(file)
                 
-                // Используем редьюсер для установки изображения на фон
                 dispatch(changeBackgroundToImage({
                     slideId: selectedSlideIdForColor,
                     imageUrl: imageUrl
@@ -247,17 +239,14 @@ export function SlideCollection(props: SlideCollectionProps) {
         }
     }
 
-    // Обработчик клика вне контекстного меню и цветового пикера
     useEffect(() => {
         const handleClickOutside = (e: globalThis.MouseEvent) => {
             const target = e.target as HTMLElement
             
-            // Проверяем клик вне контекстного меню
             if (contextMenuRef.current && !contextMenuRef.current.contains(target)) {
                 closeContextMenu()
             }
             
-            // Проверяем клик вне цветового пикера
             if (showColorPicker && colorPickerRef.current && 
                 !colorPickerRef.current.contains(target) && 
                 target.tagName !== 'INPUT') {
@@ -271,13 +260,10 @@ export function SlideCollection(props: SlideCollectionProps) {
         }
     }, [showColorPicker])
 
-    // Автофокус на цветовой пикер при его появлении
     useEffect(() => {
         if (showColorPicker && colorPickerRef.current) {
-            // Вместо click() используем focus()
             colorPickerRef.current.focus()
             
-            // Для некоторых браузеров нужно явно открыть пикер
             colorPickerRef.current.click()
         }
     }, [showColorPicker])
@@ -302,7 +288,6 @@ export function SlideCollection(props: SlideCollectionProps) {
         }
     }, [slides, selectedSlide, dispatch])
 
-    // Очистка таймаута при размонтировании
     useEffect(() => {
         return () => {
             if (colorTimeoutRef.current) {
@@ -313,15 +298,14 @@ export function SlideCollection(props: SlideCollectionProps) {
 
     return (
         <>
+            <div className={styles.buttonSection}>
+                    <Button className={styles.button} onClick={handleAddSlide}>+</Button>
+                </div>
             <div
                 className={styles.slideCollection}
                 ref={containerRef}
                 onMouseMove={handleMouseMove}
             >
-                <div className={styles.buttonSection}>
-                    <Button className={styles.button} onClick={handleAddSlide}>+</Button>
-                    <Button className={styles.button} onClick={() => handleRemoveSlide()}>-</Button>
-                </div>
 
                 <div>
                     {slides.map((slide, index) => (
@@ -363,7 +347,6 @@ export function SlideCollection(props: SlideCollectionProps) {
                 </div>
             </div>
 
-            {/* Контекстное меню */}
             {contextMenu && contextMenu.visible && (
                 <div
                     ref={contextMenuRef}
@@ -396,7 +379,6 @@ export function SlideCollection(props: SlideCollectionProps) {
                 </div>
             )}
 
-            {/* Цветовой пикер */}
             {showColorPicker && (
                 <div style={{
                     position: 'fixed',
@@ -414,7 +396,7 @@ export function SlideCollection(props: SlideCollectionProps) {
                             border: '2px solid #ccc',
                             borderRadius: '4px',
                             cursor: 'pointer',
-                            opacity: 1, // Показываем пикер
+                            opacity: 1, 
                             position: 'absolute',
                             top: 0,
                             left: 0,

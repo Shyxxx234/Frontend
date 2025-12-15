@@ -67,3 +67,17 @@ export type Constraints = {
     maxHeight: number
     minSize: number
 }
+
+export type Rect = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export type ImageObject =  {
+  type: 'image'
+  src: string
+  rect: Rect
+  id: string
+}

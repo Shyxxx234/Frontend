@@ -4,10 +4,10 @@ import styles from "./ShowSlide.module.css"
 import type { Slide, SlideObject } from '../store/types'
 import type { RootState } from '../store/store'
 import { selectObject } from '../store/presentationSlice'
-import { 
-    moveObject, 
-    resizeObject, 
-    changePlainTextContent 
+import {
+    moveObject,
+    resizeObject,
+    changePlainTextContent
 } from '../store/slideObjectSlice'
 import { calculateResize } from '../store/utils'
 
@@ -21,13 +21,20 @@ type ShowSlideProps = {
 
 type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
 
-type TempTransform = {
+type SingleTransform = {
     objectId: string
     x: number
     y: number
     width: number
     height: number
 }
+
+type MultiTransform = {
+    objectIds: string[]
+    transforms: SingleTransform[]
+}
+
+type TempTransform = SingleTransform | MultiTransform | null
 
 export function ShowSlide(props: ShowSlideProps) {
     const dispatch = useDispatch()
@@ -38,13 +45,13 @@ export function ShowSlide(props: ShowSlideProps) {
     )
 
     const [resizingId, setResizingId] = useState<string | null>(null)
-    const [tempTransform, setTempTransform] = useState<TempTransform | null>(null)
+    const [tempTransform, setTempTransform] = useState<TempTransform>(null)
     const [isDragging, setIsDragging] = useState(false)
     const [editingTextId, setEditingTextId] = useState<string | null>(null)
     const [initialContent, setInitialContent] = useState<string>('')
     const slideRef = useRef<HTMLDivElement>(null)
     const textEditRef = useRef<HTMLDivElement>(null)
-    const tempTransformRef = useRef<TempTransform | null>(null)
+    const tempTransformRef = useRef<TempTransform>(null)
 
     useEffect(() => {
         tempTransformRef.current = tempTransform
@@ -126,12 +133,8 @@ export function ShowSlide(props: ShowSlideProps) {
             e.preventDefault()
             stopEditingText()
         }
-        // Разрешаем все остальные клавиши, включая backspace
     }
 
-    const handleTextInput = () => {
-        // Пустая функция для обработки изменений
-    }
 
     const startDrag = (e: React.MouseEvent, objId: string) => {
         if (props.disableObjectClicks || editingTextId === objId) return
@@ -142,13 +145,24 @@ export function ShowSlide(props: ShowSlideProps) {
         const slideRect = slideRef.current?.getBoundingClientRect()
         if (!slideRect) return
 
-        const selectedObj = slideObjects.find(obj => obj.id === objId)
-        if (!selectedObj) return
+        const selectedIds = props.objSelection?.includes(objId) 
+            ? props.objSelection
+            : [objId]
+        
+        const objectsToDrag = slideObjects.filter(obj => 
+            selectedIds.includes(obj.id)
+        )
 
         const startMouseX = e.clientX
         const startMouseY = e.clientY
-        const startObjX = selectedObj.rect.x
-        const startObjY = selectedObj.rect.y
+        
+        const startPositions = objectsToDrag.map(obj => ({
+            id: obj.id,
+            startX: obj.rect.x,
+            startY: obj.rect.y,
+            width: obj.rect.width,
+            height: obj.rect.height
+        }))
 
         setIsDragging(true)
 
@@ -156,15 +170,28 @@ export function ShowSlide(props: ShowSlideProps) {
             const deltaX = moveEvent.clientX - startMouseX
             const deltaY = moveEvent.clientY - startMouseY
 
-            const newX = Math.min(Math.max(0, startObjX + deltaX), slideRect.width - selectedObj.rect.width)
-            const newY = Math.min(Math.max(0, startObjY + deltaY), slideRect.height - selectedObj.rect.height)
+            const transforms = startPositions.map(pos => {
+                const newX = Math.min(
+                    Math.max(0, pos.startX + deltaX),
+                    slideRect.width - pos.width
+                )
+                const newY = Math.min(
+                    Math.max(0, pos.startY + deltaY),
+                    slideRect.height - pos.height
+                )
+
+                return {
+                    objectId: pos.id,
+                    x: newX,
+                    y: newY,
+                    width: pos.width,
+                    height: pos.height
+                }
+            })
 
             setTempTransform({
-                objectId: objId,
-                x: newX,
-                y: newY,
-                width: selectedObj.rect.width,  
-                height: selectedObj.rect.height
+                objectIds: transforms.map(t => t.objectId),
+                transforms
             })
         }
 
@@ -174,13 +201,15 @@ export function ShowSlide(props: ShowSlideProps) {
 
             const finalTransform = tempTransformRef.current
 
-            if (finalTransform) {
-                dispatch(moveObject({
-                    objectId: objId,
-                    slideId: props.slideId,
-                    x: finalTransform.x,
-                    y: finalTransform.y
-                }))
+            if (finalTransform && 'transforms' in finalTransform) {
+                finalTransform.transforms.forEach((transform: SingleTransform) => {
+                    dispatch(moveObject({
+                        objectId: transform.objectId,
+                        slideId: props.slideId,
+                        x: transform.x,
+                        y: transform.y
+                    }))
+                })
             }
 
             setTimeout(() => {
@@ -252,9 +281,9 @@ export function ShowSlide(props: ShowSlideProps) {
 
             const finalTransform = tempTransformRef.current
 
-            if (finalTransform) {
+            if (finalTransform && 'objectId' in finalTransform) {
                 dispatch(resizeObject({
-                    objectId: objId,
+                    objectId: finalTransform.objectId,
                     slideId: props.slideId,
                     x: finalTransform.x,
                     y: finalTransform.y,
@@ -298,7 +327,9 @@ export function ShowSlide(props: ShowSlideProps) {
     const objSelection = props.objSelection || []
 
     const getObjectRect = (obj: SlideObject) => {
-        if (tempTransform && tempTransform.objectId === obj.id) {
+        if (!tempTransform) return obj.rect
+        
+        if ('objectId' in tempTransform && tempTransform.objectId === obj.id) {
             return {
                 x: tempTransform.x,
                 y: tempTransform.y,
@@ -306,6 +337,19 @@ export function ShowSlide(props: ShowSlideProps) {
                 height: tempTransform.height
             }
         }
+        
+        if ('transforms' in tempTransform) {
+            const transform = tempTransform.transforms.find(t => t.objectId === obj.id)
+            if (transform) {
+                return {
+                    x: transform.x,
+                    y: transform.y,
+                    width: transform.width,
+                    height: transform.height
+                }
+            }
+        }
+        
         return obj.rect
     }
 
@@ -364,7 +408,6 @@ export function ShowSlide(props: ShowSlideProps) {
                                         suppressContentEditableWarning={true}
                                         onBlur={stopEditingText}
                                         onKeyDown={handleTextKeyDown}
-                                        onInput={handleTextInput}
                                     >
                                         {initialContent}
                                     </div>
