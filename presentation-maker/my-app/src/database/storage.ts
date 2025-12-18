@@ -1,12 +1,5 @@
-import { Client, Storage } from "appwrite"
+import { storage, StorageID } from "../store/appwriteClient"
 import { generateTimestampId } from "../store/utils"
-
-export const Endpoint = 'https://nyc.cloud.appwrite.io/v1'
-export const ProjectID = '692c3653001826a25ad9'
-export const StorageID = '692c55ce002c99383afa'
-
-const client = new Client().setEndpoint(Endpoint).setProject(ProjectID)
-const storage = new Storage(client)
 
 export async function uploadImage(file: File): Promise<string> {
     const result = await storage.createFile({

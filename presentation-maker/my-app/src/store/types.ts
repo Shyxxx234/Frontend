@@ -6,6 +6,7 @@ export type Slide = {
     background: Background
     slideObject: Array<SlideObject>
     id: string
+    notes?: string
 }
 
 export type Background = Color | Picture

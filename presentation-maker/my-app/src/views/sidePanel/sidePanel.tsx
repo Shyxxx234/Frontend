@@ -7,31 +7,32 @@ import { useState } from "react"
 import { useAuth } from '../../hooks/useAuth'
 import type { RootState } from "../../store/store"
 import { historyManager } from "../../store/history"
+import { useNavigate } from "react-router-dom"
 
 export function SidePanel() {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
     const selectedSlideId = presentation.selectedSlide
     const selectedObjects = presentation.selectedObjects
+    const navigate = useNavigate()
 
     const {
         user,
         loading,
         showLogin,
-        showRegister,
         setShowLogin,
         setShowRegister,
         login,
-        register,
         logout
     } = useAuth()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-
-    
-
+    const handleLogout = async() => {
+        await logout()
+        navigate('/login', )
+    } 
     const handleRemoveObject = () => {
         if (selectedSlideId && selectedObjects.length > 0) {
             const objectId = selectedObjects[0]
@@ -42,19 +43,6 @@ export function SidePanel() {
     const handleLoginSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         login(email, password)
-    }
-
-    const handleRegisterSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        register(email, password)
-    }
-
-    const handleLoginClick = () => {
-        login(email, password)
-    }
-
-    const handleRegisterClick = () => {
-        register(email, password)
     }
 
     const handleUndo = () => {
@@ -85,7 +73,7 @@ export function SidePanel() {
                         </div>
                         <Button
                             className={styles.button}
-                            onClick={logout}
+                            onClick={handleLogout}
                         >
                             Выйти
                         </Button>
@@ -130,46 +118,6 @@ export function SidePanel() {
                                 required
                             />
                             <div style={{ display: 'flex', gap: '8px', marginTop: '15px' }}>
-                                <Button className={styles.button} onClick={handleLoginClick}>
-                                    Войти
-                                </Button>
-                                <Button 
-                                    className={styles.button}
-                                    onClick={closeModals}
-                                >
-                                    Отмена
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {showRegister && (
-                <div className={styles.modalOverlay} onClick={closeModals}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <h3 style={{ margin: '0 0 15px 0' }}>Регистрация</h3>
-                        <form onSubmit={handleRegisterSubmit}>
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={styles.input}
-                                required
-                            />
-                            <input
-                                type="password"
-                                placeholder="Пароль"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className={styles.input}
-                                required
-                            />
-                            <div style={{ display: 'flex', gap: '8px', marginTop: '15px' }}>
-                                <Button className={styles.button} onClick={handleRegisterClick}>
-                                    Зарегистрироваться
-                                </Button>
                                 <Button 
                                     className={styles.button}
                                     onClick={closeModals}

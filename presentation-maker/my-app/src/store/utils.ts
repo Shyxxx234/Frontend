@@ -45,7 +45,8 @@ export function createBlankSlide(): Slide {
             color: "#000000",
         },
         slideObject: [],
-        id: generateTimestampId()
+        id: generateTimestampId(),
+        notes: ''
     }
 }
 
@@ -121,4 +122,47 @@ export function calculateResize(
         newWidth: constrainedWidth,
         newHeight: constrainedHeight
     }
+}
+
+export function openSpeakerModeInNewWindow(): Window | null {
+    const width = 1200
+    const height = 800
+    const left = (window.screen.width - width) / 2
+    const top = (window.screen.height - height) / 2
+    
+    const newWindow = window.open(
+        '',
+        'speakerMode',
+        `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    )
+    
+    if (!newWindow) {
+        alert('Пожалуйста, разрешите всплывающие окна для использования режима докладчика')
+        return null
+    }
+    
+    newWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Режим докладчика</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: Arial, sans-serif; }
+                #root { height: 100vh; }
+            </style>
+        </head>
+        <body>
+            <div id="root"></div>
+            <script>
+                // Сообщаем основному окну, что мы готовы
+                window.opener.postMessage({ type: 'SPEAKER_MODE_READY' }, '*');
+            </script>
+        </body>
+        </html>
+    `)
+    
+    return newWindow
 }

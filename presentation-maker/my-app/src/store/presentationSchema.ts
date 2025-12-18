@@ -11,7 +11,6 @@ const colorSchema: JSONSchemaType<Color> = {
     color: { type: "string" }
   },
   required: ["type", "color"],
-  additionalProperties: false
 }
 
 const pictureBackgroundSchema: JSONSchemaType<Picture> = {
@@ -21,7 +20,6 @@ const pictureBackgroundSchema: JSONSchemaType<Picture> = {
     src: { type: "string" }
   },
   required: ["type", "src"],
-  additionalProperties: false
 }
 
 const backgroundSchema: JSONSchemaType<Background> = {
@@ -38,7 +36,6 @@ const rectSchema: JSONSchemaType<Rect> = {
     height: { type: "number" }
   },
   required: ["x", "y", "width", "height"],
-  additionalProperties: false
 }
 
 const plainTextSchema: JSONSchemaType<PlainText> = {
@@ -53,7 +50,6 @@ const plainTextSchema: JSONSchemaType<PlainText> = {
     id: { type: "string" }
   },
   required: ["type", "content", "fontFamily", "weight", "scale", "rect", "id"],
-  additionalProperties: false
 }
 
 const imageSchema: JSONSchemaType<ImageObject> = {
@@ -65,7 +61,6 @@ const imageSchema: JSONSchemaType<ImageObject> = {
     id: { type: "string" }
   },
   required: ["type", "src", "rect", "id"],
-  additionalProperties: false
 }
 
 const slideObjectSchema: JSONSchemaType<SlideObjectForSchema> = {
@@ -81,10 +76,9 @@ const slideSchema = {
       type: "array",
       items: slideObjectSchema
     },
-    id: { type: "string" }
+    id: { type: "string" },
   },
   required: ["background", "slideObject", "id"],
-  additionalProperties: false
 } as JSONSchemaType<Slide>
 
 export const presentationSchema = {
@@ -104,5 +98,4 @@ export const presentationSchema = {
     }
   },
   required: ["title", "slides", "selectedObjects"],
-  additionalProperties: false
 } as JSONSchemaType<Presentation>

@@ -7,14 +7,9 @@ import { uploadImage, uploadImageFromUrl } from "../../database/storage"
 import type { RootState } from "../../store/store"
 import { selectSlide } from "../../store/presentationSlice"
 
-type WorkspaceProps = {
-    isSlideShow?: boolean,
-    onExitSlideShow?: () => void
-}
-
 type ModalState = 'none' | 'source' | 'url'
 
-export function Workspace(props: WorkspaceProps) {
+export function Workspace() {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides.slides)
@@ -36,37 +31,12 @@ export function Workspace(props: WorkspaceProps) {
     const workspaceRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        if (props.isSlideShow) {
-            const handleContextMenu = (e: MouseEvent) => {
-                e.preventDefault()
-            }
-            document.addEventListener('contextmenu', handleContextMenu)
-            return () => document.removeEventListener('contextmenu', handleContextMenu)
-        }
-    }, [props.isSlideShow])
-
-    useEffect(() => {
         if (slides.length > 0 && !selectedSlideId) {
             dispatch(selectSlide(slides[0].id))
         }
     }, [slides, selectedSlideId, dispatch])
 
-    const goToPreviousSlide = () => {
-        if (slideIndex > 0) {
-            const prevSlide = slides[slideIndex - 1]
-            dispatch(selectSlide(prevSlide.id))
-        }
-    }
-
-    const goToNextSlide = () => {
-        if (slideIndex < slides.length - 1) {
-            const nextSlide = slides[slideIndex + 1]
-            dispatch(selectSlide(nextSlide.id))
-        }
-    }
-
     const handleContextMenu = (e: React.MouseEvent) => {
-        if (props.isSlideShow) return
         e.preventDefault()
 
         if (!selectedSlideId) {
@@ -146,10 +116,11 @@ export function Workspace(props: WorkspaceProps) {
 
     const handleAddImageFromUrl = async () => {
         if (selectedSlideId && imageUrlInput.trim()) {
-            new URL(imageUrlInput.trim())
-            setIsUploading(true)
-            setUploadError(null)
             try {
+                new URL(imageUrlInput.trim())
+                setIsUploading(true)
+                setUploadError(null)
+                
                 const imageUrl = await uploadImageFromUrl(imageUrlInput.trim())
                 dispatch(addImageObject({
                     slideId: selectedSlideId,
@@ -187,30 +158,38 @@ export function Workspace(props: WorkspaceProps) {
 
     return (
         <div className={styles.workspaceContainer}>
-            {!props.isSlideShow && (
-                <div className={styles.workspaceNavigation}>
-                    <button
-                        className={styles.navButton}
-                        onClick={goToPreviousSlide}
-                        disabled={slideIndex <= 0}
-                    >
-                        ◀ Предыдущий
-                    </button>
-                    <div className={styles.slideInfo}>
-                        Слайд {slideIndex + 1} из {slides.length}
-                    </div>
-                    <button
-                        className={styles.navButton}
-                        onClick={goToNextSlide}
-                        disabled={slideIndex >= slides.length - 1}
-                    >
-                        Следующий ▶
-                    </button>
+            <div className={styles.workspaceNavigation}>
+                <button
+                    className={styles.navButton}
+                    onClick={() => {
+                        if (slideIndex > 0) {
+                            const prevSlide = slides[slideIndex - 1]
+                            dispatch(selectSlide(prevSlide.id))
+                        }
+                    }}
+                    disabled={slideIndex <= 0}
+                >
+                    ◀ Предыдущий
+                </button>
+                <div className={styles.slideInfo}>
+                    Слайд {slideIndex + 1} из {slides.length}
                 </div>
-            )}
+                <button
+                    className={styles.navButton}
+                    onClick={() => {
+                        if (slideIndex < slides.length - 1) {
+                            const nextSlide = slides[slideIndex + 1]
+                            dispatch(selectSlide(nextSlide.id))
+                        }
+                    }}
+                    disabled={slideIndex >= slides.length - 1}
+                >
+                    Следующий ▶
+                </button>
+            </div>
 
             <div
-                className={`${styles.workspace} ${props.isSlideShow ? styles.slideShowMode : ''}`}
+                className={styles.workspace}
                 onContextMenu={handleContextMenu}
                 onClick={handleCloseContextMenu}
                 ref={workspaceRef}
@@ -220,12 +199,12 @@ export function Workspace(props: WorkspaceProps) {
                         <ShowSlide
                             slide={currentSlideWithObjects}
                             className={styles.slide}
-                            disableObjectClicks={props.isSlideShow || false}
+                            disableObjectClicks={false}
                             slideId={currentSlideWithObjects.id}
                             objSelection={selectedObjects}
                         />
 
-                        {!props.isSlideShow && contextMenu && (
+                        {contextMenu && (
                             <div
                                 className={styles.contextMenu}
                                 style={{
@@ -257,7 +236,7 @@ export function Workspace(props: WorkspaceProps) {
                             onChange={handleFileSelect}
                         />
 
-                        {!props.isSlideShow && modalState === 'source' && (
+                        {modalState === 'source' && (
                             <div className={styles.modalOverlay} onClick={handleCloseModal}>
                                 <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                                     <h3>Выберите источник изображения</h3>
@@ -295,7 +274,7 @@ export function Workspace(props: WorkspaceProps) {
                             </div>
                         )}
 
-                        {!props.isSlideShow && modalState === 'url' && (
+                        {modalState === 'url' && (
                             <div className={styles.modalOverlay} onClick={handleCloseModal}>
                                 <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                                     <h3>Добавить изображение из URL</h3>

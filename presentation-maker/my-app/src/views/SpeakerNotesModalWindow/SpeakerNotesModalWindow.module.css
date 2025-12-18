@@ -1,0 +1,419 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    width: 90%;
+    height: 85%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    -webkit-text-fill-color: transparent;
+}
+
+.closeButton {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.leftPanel {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.rightPanel {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    overflow-y: auto;
+}
+
+.slidePreview {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slideNumber {
+    font-size: 14px;
+    color: #4cc9f0;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.previewContainer {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    padding: 30px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slidePreviewContent {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+    text-align: center;
+}
+
+.slideId {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: monospace;
+}
+
+.objectsCount {
+    font-size: 14px;
+    color: #4cc9f0;
+}
+
+.backgroundInfo {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.navigation {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.navButton {
+    padding: 12px 24px;
+    background: linear-gradient(90deg, #4361ee, #3a0ca3);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+}
+
+.navButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+}
+
+.navButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.timerSection {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionTitle {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #4cc9f0;
+}
+
+.timerDisplay {
+    font-size: 32px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    color: #4cc9f0;
+}
+
+.timerControls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.timerButton {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+}
+
+.timerButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.timerHotkey {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-top: 5px;
+}
+
+.notesSection {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notesTextarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 15px;
+    color: white;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.notesTextarea:focus {
+    outline: none;
+    border-color: #4361ee;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.notesInfo {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: right;
+    margin-top: 5px;
+}
+
+.aiSection {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.aiControls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.aiButton {
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #f72585, #b5179e);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.aiButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(247, 37, 133, 0.4);
+}
+
+.aiButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.clearButton {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clearButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.clearButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.actionButton {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.actionButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.aiResponse {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 20px;
+    border-left: 4px solid #f72585;
+}
+
+.aiResponse h4 {
+    margin: 0 0 10px 0;
+    color: #f72585;
+    font-size: 16px;
+}
+
+.responseContent {
+    line-height: 1.6;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.footer {
+    padding: 15px 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hotkeyInfo {
+    display: flex;
+    gap: 30px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.hotkeyInfo span {
+    display: inline-block;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.presentationInfo {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Добавьте в SpeakerNotesModalWindow.module.css */
+
+.previewContainer {
+    width: 100%;
+    height: 300px;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slidePreviewContent {
+    width: 100%;
+    height: 100%;
+    transform-origin: center center;
+}
+
+.slidePreviewContent :global(.slide) {
+    width: 100% !important;
+    height: 100% !important;
+    transform: scale(0.8);
+    transform-origin: center center;
+}
+
+.noSlidePreview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 16px;
+}
+
+/* Убедитесь, что слайд помещается в контейнер */
+.slidePreviewContent :global(.slide-content) {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Стили для объектов на слайде */
+.slidePreviewContent :global(.slide-object) {
+    pointer-events: none !important;
+}

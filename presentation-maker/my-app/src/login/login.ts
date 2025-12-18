@@ -1,40 +1,63 @@
-import { Client, Account } from "appwrite"
+import { account } from "../store/appwriteClient"
 import { generateTimestampId } from "../store/utils"
+import { AppwriteException, type Models } from "appwrite"
 
-const client = new Client()
-    .setEndpoint("https://nyc.cloud.appwrite.io/v1")
-    .setProject("692c3653001826a25ad9")
-
-const account = new Account(client)
-
-async function signIn(email: string, password: string) {
-    const result = await account.createEmailPasswordSession({
-        email: email,
-        password: password
-    })
-    return result
+async function signIn(email: string, password: string): Promise<Models.Session> {
+    try {
+        try {
+            await account.get()
+        } catch {
+            console.log('No active session, creating new one...')
+        }
+        
+        const result = await account.createEmailPasswordSession({
+            email: email,
+            password: password
+        })
+        return result
+    } catch (error: unknown) {
+        if (error instanceof AppwriteException && error.code === 409) {
+            try {
+                await account.deleteSession({sessionId:'current'})
+                const result = await account.createEmailPasswordSession({
+                    email: email,
+                    password: password
+                })
+                return result
+            } catch  {
+                console.log()
+            }
+        }
+        throw error
+    }
 }
 
-async function register(email: string, password: string, name?: string) {
+async function register(email: string, password: string, name?: string): Promise<Models.User<Models.Preferences>> {
     const user = await account.create({
         userId: generateTimestampId(),
         email,
         password,
         name
     })
-    console.log(user)
+    console.log('User registered:', user)
     return user
 }
 
-async function getCurrentUser() {
-    const user = await account.get()
-    return user
+async function getCurrentUser(): Promise<Models.User<Models.Preferences> | null> {
+    try {
+        const user = await account.get()
+        return user
+    } catch {
+        return null
+    }
 }
 
-async function signOut() {
-    await account.deleteSession({
-        sessionId: 'current'
-    })
+async function signOut(): Promise<void> {
+    try {
+        await account.deleteSession({sessionId: 'current'})
+    } catch (error) {
+        console.error('Error during sign out:', error)
+    }
 }
 
 export {
@@ -42,5 +65,5 @@ export {
     register,
     getCurrentUser,
     signOut,
-    account
+    account,
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"
-import './toolbar.module.css'
+import { useNavigate } from 'react-router-dom'
 import { Button } from "../../common/Button"
 import styles from "./toolbar.module.css"
 import { useSelector, useDispatch } from 'react-redux'
@@ -8,11 +8,12 @@ import type { RootState } from "../../store/store"
 import { changePresentationName } from "../../store/presentationSlice"
 
 type ToolbarProps = {
-    onStartSlideShow: () => void,
+    onStartSpeakerMode: () => void,
     onOpenLoadModal: () => void,
 }
 
 export function Toolbar(props: ToolbarProps) {
+    const navigate = useNavigate()
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides)
@@ -62,6 +63,10 @@ export function Toolbar(props: ToolbarProps) {
     const handleLoadPresentationClick = () => {
         setShowFileMenu(false)
         props.onOpenLoadModal()
+    }
+
+    const handleStartSlideShow = () => {
+        navigate('/player')
     }
 
     useEffect(() => {
@@ -134,12 +139,21 @@ export function Toolbar(props: ToolbarProps) {
                 </Button>
             )}
 
-            <Button
-                onClick={props.onStartSlideShow}
-                className={`${styles.button} ${styles.slide_show}`}
-            >
-                Слайд-шоу
-            </Button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+                <Button
+                    onClick={props.onStartSpeakerMode}
+                    className={styles.button}
+                >
+                    Режим докладчика
+                </Button>
+                
+                <Button
+                    onClick={handleStartSlideShow}
+                    className={`${styles.button} ${styles.slide_show}`}
+                >
+                    Слайд-шоу
+                </Button>
+            </div>
         </div>
     )
 }

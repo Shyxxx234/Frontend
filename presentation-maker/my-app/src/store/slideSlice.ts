@@ -54,7 +54,6 @@ const slideSlice = createSlice({
       }
     },
 
-    // Добавляем новый редьюсер для изображений на фон
     changeBackgroundToImage: (state, action: PayloadAction<{ imageUrl: string; slideId: string }>) => {
       const { imageUrl, slideId } = action.payload
       const slide = state.slides.find(s => s.id === slideId)
@@ -64,6 +63,26 @@ const slideSlice = createSlice({
           type: 'picture',
           src: imageUrl
         }
+      }
+    },
+
+    // Добавьте этот редьюсер для обновления заметок
+    updateSlideNotes: (state, action: PayloadAction<{ slideId: string; notes: string }>) => {
+      const { slideId, notes } = action.payload
+      const slide = state.slides.find(s => s.id === slideId)
+
+      if (slide) {
+        slide.notes = notes
+      }
+    },
+
+    // Опционально: добавьте action для очистки заметок
+    clearSlideNotes: (state, action: PayloadAction<string>) => {
+      const slideId = action.payload
+      const slide = state.slides.find(s => s.id === slideId)
+
+      if (slide) {
+        slide.notes = ''
       }
     },
   }
@@ -76,6 +95,8 @@ export const {
   restoreSlides,
   changeBackgroundToColor,
   changeBackgroundToImage,
+  updateSlideNotes, // Экспортируйте новый action
+  clearSlideNotes,  // И этот тоже, если добавили
 } = slideSlice.actions
 
 export default slideSlice.reducer

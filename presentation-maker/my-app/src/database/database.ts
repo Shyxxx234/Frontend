@@ -1,14 +1,9 @@
-import { Client, Query, TablesDB } from "appwrite"
+import { Query } from 'appwrite'
 import { getCurrentUser } from '../login/login'
 import type { RootState } from "../store/store"
 import { generateTimestampId } from "../store/utils"
-import { presentationSchema } from "../store/presentationSchema"
-import Ajv from "ajv"
-
-const ajv = new Ajv()
-
-
-const validatePresentation = ajv.compile(presentationSchema)
+import { validatePresentation } from "../store/valiadatorAJV"
+import { DataBaseID, TabelID, tablesDB } from '../store/appwriteClient'
 
 type SaveToDBParams = {
   title: string
@@ -16,14 +11,6 @@ type SaveToDBParams = {
   slides: RootState['slides']
   slideObjects: RootState['slideObjects']
 }
-
-const Endpoint = 'https://nyc.cloud.appwrite.io/v1'
-const ProjectID = '692c3653001826a25ad9'
-const DataBaseID = '692c53a700225555587a'
-const TabelID = 'presentation'
-
-const client = new Client().setEndpoint(`${Endpoint}`).setProject(`${ProjectID}`)
-const tablesDB = new TablesDB(client)
 
 const PRESENTATION_ID_KEY = 'current_presentation_id'
 

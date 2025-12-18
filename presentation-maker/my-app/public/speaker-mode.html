@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Режим докладчика</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: Arial, sans-serif; 
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        // Получаем данные из основного окна
+        const presentationData = window.opener ? window.opener.presentationDataForSpeakerMode : null;
+        
+        // Сохраняем в глобальной области видимости
+        if (presentationData) {
+            window.presentationData = presentationData;
+        }
+        
+        // Ждем загрузки скрипта приложения
+        setTimeout(() => {
+            if (window.renderSpeakerNotes && presentationData) {
+                window.renderSpeakerNotes(presentationData);
+            }
+        }, 100);
+    </script>
+    <!-- Подключаем сборку React -->
+    <script src="/static/js/speaker-mode.js"></script>
+</body>
+</html>
