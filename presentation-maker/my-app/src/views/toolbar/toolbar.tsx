@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { saveToDB } from '../../database/database'
 import type { RootState } from "../../store/store"
 import { changePresentationName } from "../../store/presentationSlice"
+import { exportCurrentPresentation } from "../../store/exportPDF"
 
 type ToolbarProps = {
     onStartSpeakerMode: () => void,
@@ -18,10 +19,12 @@ export function Toolbar(props: ToolbarProps) {
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides)
     const slideObjects = useSelector((state: RootState) => state.slideObjects)
+    const fullState = useSelector((state: RootState) => state)
 
     const [isEditing, setIsEditing] = useState(false)
     const [title, setTitle] = useState(presentation.title)
     const [showFileMenu, setShowFileMenu] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
 
     const fileMenuRef = useRef<HTMLDivElement>(null)
 
@@ -65,6 +68,28 @@ export function Toolbar(props: ToolbarProps) {
         props.onOpenLoadModal()
     }
 
+    const handleExportToPDF = async () => {
+        if (slides.slides.length === 0) {
+            alert('Нет слайдов для экспорта')
+            return
+        }
+
+        setIsExporting(true)
+        setShowFileMenu(false)
+
+        try {
+            await exportCurrentPresentation(
+                fullState,
+                `${presentation.title || 'presentation'}.pdf`
+            )
+        } catch (error) {
+            console.error('Ошибка при экспорте в PDF:', error)
+            alert('Произошла ошибка при экспорте в PDF')
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     const handleStartSlideShow = () => {
         navigate('/player')
     }
@@ -88,6 +113,7 @@ export function Toolbar(props: ToolbarProps) {
                 <Button
                     onClick={handleFileClick}
                     className={styles.button}
+                    disabled={isExporting}
                 >
                     Файл
                 </Button>
@@ -98,16 +124,26 @@ export function Toolbar(props: ToolbarProps) {
                         className={styles.file_menu}
                     >
                         <div
-                            className={styles.new_presentation}
+                            className={styles.menu_item}
                             onClick={handleSavePresentation}
                         >
                             Сохранить презентацию
                         </div>
                         <div
-                            className={styles.new_presentation}
+                            className={styles.menu_item}
                             onClick={handleLoadPresentationClick}
                         >
                             Загрузить презентацию
+                        </div>
+                        <div
+                            className={styles.menu_item}
+                            onClick={handleExportToPDF}
+                            style={{
+                                opacity: isExporting ? 0.5 : 1,
+                                cursor: isExporting ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isExporting ? 'Экспорт...' : 'Экспорт в PDF'}
                         </div>
                     </div>
                 )}

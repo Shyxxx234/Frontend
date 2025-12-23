@@ -5,9 +5,193 @@
     align-items: center;
     gap: 15px;
     left: 25%;
-    top: 20%
+    top: 20%;
 }
 
+/* Добавляем новый контейнер для основного содержимого */
+.workspaceMainContent {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.workspaceWithPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Панель форматирования текста */
+.formattingPanel {
+    width: 280px;
+    min-width: 280px;
+    background: rgb(0, 0, 0);
+    border: 1px solid #535BF2;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin-top: 60px; /* Чтобы выровнять с workspace */
+}
+
+.panelTitle {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #535BF2;
+}
+
+.noSelection {
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 0;
+    margin: 0;
+    font-size: 14px;
+}
+
+.section {
+    margin-bottom: 16px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #ddd;
+    font-weight: 500;
+}
+
+.select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    font-size: 14px;
+    background: rgb(20, 20, 20);
+    color: white;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.select:focus {
+    outline: none;
+    border-color: #4348C4;
+}
+
+.sizeButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sizeButton {
+    padding: 6px 10px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    min-width: 36px;
+    color: white;
+    transition: all 0.2s;
+}
+
+.sizeButton:hover {
+    border-color: #4348C4;
+    background: rgba(83, 91, 242, 0.1);
+}
+
+.sizeButton.active {
+    background: #535BF2;
+    color: white;
+    border-color: #535BF2;
+}
+
+.weightButtons {
+    display: flex;
+    gap: 6px;
+}
+
+.weightButton {
+    flex: 1;
+    padding: 8px 6px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    text-align: center;
+    color: white;
+    transition: all 0.2s;
+}
+
+.weightButton:hover {
+    border-color: #4348C4;
+    background: rgba(83, 91, 242, 0.1);
+}
+
+.weightButton.active {
+    background: #535BF2;
+    color: white;
+    border-color: #535BF2;
+}
+
+.colorPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.colorButton {
+    width: 28px;
+    height: 28px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.colorButton:hover {
+    transform: scale(1.1);
+    border-color: white;
+}
+
+.colorButton:active {
+    transform: scale(0.95);
+}
+
+.alignmentButtons {
+    display: flex;
+    gap: 6px;
+}
+
+.alignmentButton {
+    flex: 1;
+    padding: 8px 6px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    color: white;
+    transition: all 0.2s;
+}
+
+.alignmentButton:hover {
+    border-color: #4348C4;
+    background: rgba(83, 91, 242, 0.1);
+}
+
+.alignmentButton.active {
+    background: #535BF2;
+    color: white;
+    border-color: #535BF2;
+}
+
+/* Остальные существующие стили остаются без изменений */
 .workspaceNavigation {
     display: flex;
     justify-content: space-between;
@@ -193,3 +377,202 @@
     max-height: 100%;
 }
 
+.slideWrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Контекстное меню для текста */
+.textContextMenu {
+    position: absolute;
+    background: rgb(0, 0, 0);
+    border: 2px solid #535BF2;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 20px rgba(83, 91, 242, 0.3);
+    z-index: 1002;
+    width: 280px;
+    min-width: 280px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.textMenuSection {
+    margin-bottom: 12px;
+}
+
+.textMenuLabel {
+    display: block;
+    color: white;
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+/* Управление размером */
+.sizeControl {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.sizeButton {
+    background: #535BF2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sizeButton:hover {
+    background: #4348C4;
+}
+
+.sizeInput {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    text-align: center;
+}
+
+.sizeInput:focus {
+    outline: none;
+    border-color: #4348C4;
+}
+
+/* Выбор шрифта */
+.fontSelect {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Начертание */
+.weightOptions {
+    display: flex;
+    gap: 4px;
+}
+
+.weightOption {
+    flex: 1;
+    padding: 6px 4px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.weightOption:hover {
+    background: #535BF2;
+}
+
+/* Цвета */
+.colorOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.colorOption {
+    width: 24px;
+    height: 24px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.colorOption:hover {
+    transform: scale(1.1);
+    border-color: white;
+}
+
+.alignmentOptions {
+    display: flex;
+    gap: 4px;
+}
+
+.alignmentOption {
+    flex: 1;
+    padding: 8px 4px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.alignmentOption:hover {
+    background: #535BF2;
+}
+
+.closeMenuButton {
+    width: 100%;
+    padding: 8px;
+    background: #6C757D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+.closeMenuButton:hover {
+    background: #5a6268;
+}
+
+/* Добавим в существующий contextMenu стили для лучшего вида */
+.contextMenu {
+    position: absolute;
+    background: rgb(0, 0, 0);
+    border: 1px solid #535BF2;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 200px;
+    padding: 4px 0;
+}
+
+.contextMenuItem {
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.contextMenuItem:hover {
+    background: rgba(83, 91, 242, 0.2);
+}

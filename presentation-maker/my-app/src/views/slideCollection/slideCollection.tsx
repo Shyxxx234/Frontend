@@ -13,6 +13,7 @@ import {
 import { selectSlide } from '../../store/presentationSlice'
 import { Button } from "../../common/Button"
 import { createBlankSlide } from "../../store/utils"
+import { uploadImage } from "../../database/storage" // Импортируем функцию загрузки
 
 type SlideCollectionProps = {
     onSlideSelect: (slideId: string) => void
@@ -36,6 +37,7 @@ export function SlideCollection(props: SlideCollectionProps) {
     const [showColorPicker, setShowColorPicker] = useState(false)
     const [colorPickerPosition, setColorPickerPosition] = useState({ x: 0, y: 0 })
     const [selectedSlideIdForColor, setSelectedSlideIdForColor] = useState<string | null>(null)
+    const [isUploadingImage, setIsUploadingImage] = useState(false)
     
     const containerRef = useRef<HTMLDivElement>(null)
     const contextMenuRef = useRef<HTMLDivElement>(null)
@@ -137,18 +139,30 @@ export function SlideCollection(props: SlideCollectionProps) {
         input.type = 'file'
         input.accept = 'image/*'
         
-        input.onchange = (e: Event) => {
+        input.onchange = async (e: Event) => {
             const target = e.target as HTMLInputElement
             const file = target.files?.[0]
             if (file && selectedSlideIdForColor) {
-                const imageUrl = URL.createObjectURL(file)
-                
-                dispatch(changeBackgroundToImage({
-                    slideId: selectedSlideIdForColor,
-                    imageUrl: imageUrl
-                }))
+                try {
+                    setIsUploadingImage(true)
+                    
+                    // Загружаем изображение в Appwrite
+                    const imageUrl = await uploadImage(file)
+                    
+                    // Используем URL из Appwrite для фона слайда
+                    dispatch(changeBackgroundToImage({
+                        slideId: selectedSlideIdForColor,
+                        imageUrl: imageUrl
+                    }))
+                    
+                } catch (error) {
+                    console.error('Ошибка при загрузке изображения в Appwrite:', error)
+                    alert('Не удалось загрузить изображение. Пожалуйста, попробуйте еще раз.')
+                } finally {
+                    setIsUploadingImage(false)
+                    closeContextMenu()
+                }
             }
-            closeContextMenu()
         }
         
         input.click()
@@ -373,8 +387,12 @@ export function SlideCollection(props: SlideCollectionProps) {
                     <div 
                         className={styles.contextMenuItem}
                         onClick={handleAddImageBackground}
+                        style={{ 
+                            opacity: isUploadingImage ? 0.6 : 1,
+                            pointerEvents: isUploadingImage ? 'none' : 'auto' 
+                        }}
                     >
-                        Добавить изображение на фон
+                        {isUploadingImage ? 'Загрузка...' : 'Добавить изображение на фон'}
                     </div>
                 </div>
             )}

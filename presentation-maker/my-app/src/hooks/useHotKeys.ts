@@ -3,12 +3,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { historyManager } from '../store/history'
 import type { RootState } from '../store/store'
 import { selectSlide } from '../store/presentationSlice'
-import { removeSlide } from '../store/slideSlice'
+import { addSlide, duplicateSlide, removeSlide } from '../store/slideSlice'
+import { restoreObjects } from '../store/slideObjectSlice'
+import type { SlideObject } from '../store/types'
+import { generateTimestampId } from '../store/utils'
+import { saveToDB } from '../database/database'
 
 export const useHotkeys = (isSlideShow: boolean) => {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides.slides)
+    const slideObjects = useSelector((state: RootState) => state.slideObjects.objects)
+    const slidesObject = useSelector((state: RootState) => state.slides)
+    const slideObjectsObject = useSelector((state: RootState) => state.slideObjects)
+
 
     const handleUndo = useCallback(() => {
         if (historyManager.canUndo()) {
@@ -22,6 +30,50 @@ export const useHotkeys = (isSlideShow: boolean) => {
         }
     }, [dispatch])
 
+    const handleSavePresentation = useCallback( async () => {
+        await saveToDB({
+            title: presentation.title || 'Без названия',
+            presentation: presentation,
+            slides: slidesObject,
+            slideObjects: slideObjectsObject,
+        }, false)
+    }, [presentation, slideObjectsObject, slidesObject])
+
+    const handleAddSLide = useCallback(() => {
+        const slideIndex = slides.findIndex((slide: { id: string }) => slide.id === presentation.selectedSlide)
+        dispatch(addSlide({ idx: slideIndex + 1 }))
+    }, [dispatch, presentation.selectedSlide, slides])
+
+    const handleDuplicateSlide = useCallback(() => {
+        const slideIndex = slides.findIndex((slide: { id: string }) => slide.id === presentation.selectedSlide)
+        if (slideIndex === -1) return
+
+        const slide = slides[slideIndex]
+
+        const newSlideId = generateTimestampId()
+
+        const duplicatedSlide = {
+            ...slide,
+            id: newSlideId
+        }
+
+        dispatch(duplicateSlide({ slide: duplicatedSlide, idx: slideIndex }))
+
+        const slideObjectsToDuplicate = slideObjects[slide.id] || []
+
+        if (slideObjectsToDuplicate.length > 0) {
+            const newObjectsForSlide = slideObjectsToDuplicate.map((obj: SlideObject) => ({
+                ...obj,
+                id: generateTimestampId()
+            }))
+
+            const updatedSlideObjects = {
+                ...slideObjects,
+                [newSlideId]: newObjectsForSlide
+            }
+            dispatch(restoreObjects({ objects: updatedSlideObjects }))
+        }
+    }, [dispatch, presentation.selectedSlide, slides, slideObjects])
     const navigateToSlide = useCallback((slideId: string) => {
         dispatch(selectSlide(slideId))
     }, [dispatch])
@@ -83,6 +135,22 @@ export const useHotkeys = (isSlideShow: boolean) => {
                     case 'н':
                         event.preventDefault()
                         handleRedo()
+                        return
+                    case 'd':
+                    case 'D':
+                        event.preventDefault()
+                        handleDuplicateSlide()
+                        return
+                    case 'M':
+                    case 'm':
+                        handleAddSLide()
+                        return
+                    case 'S':
+                    case 's':
+                        console.log("save")
+                        event.preventDefault()
+                        event.stopPropagation()
+                        handleSavePresentation()
                         return
                 }
             }
@@ -156,12 +224,15 @@ export const useHotkeys = (isSlideShow: boolean) => {
             document.removeEventListener('keydown', handleKeyDown)
         }
     }, [
-        isSlideShow, 
-        presentation.selectedSlide, 
-        slides, 
-        handleUndo, 
-        handleRedo, 
-        handleDeleteSlide, 
-        navigateToSlide
+        isSlideShow,
+        presentation.selectedSlide,
+        slides,
+        handleUndo,
+        handleRedo,
+        handleDeleteSlide,
+        navigateToSlide,
+        handleDuplicateSlide,
+        handleAddSLide,
+        handleSavePresentation
     ])
 }

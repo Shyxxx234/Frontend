@@ -1,160 +1,172 @@
-import { useDispatch, useSelector } from 'react-redux'
-import React, { useState, useRef, useEffect } from "react"
-import styles from "./ShowSlide.module.css"
-import type { Slide, SlideObject } from '../store/types'
-import type { RootState } from '../store/store'
-import { selectObject } from '../store/presentationSlice'
+import { useDispatch, useSelector } from 'react-redux';
+import { useState, useRef, useEffect } from "react";
+import styles from "./ShowSlide.module.css";
+import type { Slide, SlideObject } from '../store/types';
+import type { RootState } from '../store/store';
+import { selectObject } from '../store/presentationSlice';
 import {
     moveObject,
     resizeObject,
     changePlainTextContent
-} from '../store/slideObjectSlice'
-import { calculateResize } from '../store/utils'
+} from '../store/slideObjectSlice';
+import { calculateResize } from '../store/utils';
 
 type ShowSlideProps = {
-    slide: Slide
-    disableObjectClicks: boolean
-    className?: string
-    slideId: string
-    objSelection?: Array<string>
+    slide: Slide;
+    disableObjectClicks: boolean;
+    className?: string;
+    slideId: string;
+    objSelection?: Array<string>;
+    style?: React.CSSProperties;
+    onTextObjectContextMenu?: (e: React.MouseEvent, objectId: string) => void; 
 }
 
-type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e'
+type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e';
 
 type SingleTransform = {
-    objectId: string
-    x: number
-    y: number
-    width: number
-    height: number
-}
+    objectId: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
 
 type MultiTransform = {
-    objectIds: string[]
-    transforms: SingleTransform[]
-}
+    objectIds: string[];
+    transforms: SingleTransform[];
+};
 
-type TempTransform = SingleTransform | MultiTransform | null
+type TempTransform = SingleTransform | MultiTransform | null;
 
 export function ShowSlide(props: ShowSlideProps) {
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
     const slideObjects = useSelector((state: RootState) =>
         state.slideObjects.objects[props.slideId] || [],
         (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
-    )
+    );
 
-    const [resizingId, setResizingId] = useState<string | null>(null)
-    const [tempTransform, setTempTransform] = useState<TempTransform>(null)
-    const [isDragging, setIsDragging] = useState(false)
-    const [editingTextId, setEditingTextId] = useState<string | null>(null)
-    const [initialContent, setInitialContent] = useState<string>('')
-    const slideRef = useRef<HTMLDivElement>(null)
-    const textEditRef = useRef<HTMLDivElement>(null)
-    const tempTransformRef = useRef<TempTransform>(null)
+    const [resizingId, setResizingId] = useState<string | null>(null);
+    const [tempTransform, setTempTransform] = useState<TempTransform>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [editingTextId, setEditingTextId] = useState<string | null>(null);
+    const [initialContent, setInitialContent] = useState<string>('');
+    const slideRef = useRef<HTMLDivElement>(null);
+    const textEditRef = useRef<HTMLDivElement>(null);
+    const tempTransformRef = useRef<TempTransform>(null);
 
     useEffect(() => {
-        tempTransformRef.current = tempTransform
-    }, [tempTransform])
+        tempTransformRef.current = tempTransform;
+    }, [tempTransform]);
 
     useEffect(() => {
         if (!isDragging && !resizingId) {
-            setTempTransform(null)
+            setTempTransform(null);
         }
-    }, [isDragging, resizingId])
+    }, [isDragging, resizingId]);
 
     useEffect(() => {
         if (editingTextId && textEditRef.current) {
-            textEditRef.current.focus()
-            const range = document.createRange()
-            const sel = window.getSelection()
-            range.selectNodeContents(textEditRef.current)
-            range.collapse(false)
-            sel?.removeAllRanges()
-            sel?.addRange(range)
+            textEditRef.current.focus();
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(textEditRef.current);
+            range.collapse(false);
+            sel?.removeAllRanges();
+            sel?.addRange(range);
         }
-    }, [editingTextId])
+    }, [editingTextId]);
 
     const handleObjectClick = (e: React.MouseEvent, objId: string) => {
-        if (props.disableObjectClicks || resizingId) return
+        if (props.disableObjectClicks || resizingId) return;
 
-        const currentSelection = props.objSelection || []
-        let newSelection: string[]
+        const currentSelection = props.objSelection || [];
+        let newSelection: string[];
         if (e.ctrlKey || e.metaKey) {
-            newSelection = [...currentSelection, objId]
+            newSelection = [...currentSelection, objId];
         } else {
-            newSelection = [objId]
+            newSelection = [objId];
         }
 
-        dispatch(selectObject(newSelection))
-    }
+        dispatch(selectObject(newSelection));
+    };
 
     const handleSlideClick = (e: React.MouseEvent) => {
-        if (e.target === e.currentTarget && !props.disableObjectClicks) {
-            dispatch(selectObject([]))
-            stopEditingText()
+        // Проверяем, что клик был по пустому пространству слайда
+        // Игнорируем клики по элементам формы (select, input, button, etc.)
+        const target = e.target as HTMLElement;
+        const isFormElement = target.tagName === 'SELECT' || 
+                              target.tagName === 'INPUT' || 
+                              target.tagName === 'BUTTON' ||
+                              target.tagName === 'TEXTAREA' ||
+                              target.closest('select, input, button, textarea');
+        
+        if (e.target === e.currentTarget && 
+            !props.disableObjectClicks && 
+            !isFormElement) {
+            dispatch(selectObject([]));
+            stopEditingText();
         }
-    }
+    };
 
     const startTextEditing = (e: React.MouseEvent, obj: SlideObject) => {
-        if (props.disableObjectClicks || resizingId) return
+        if (props.disableObjectClicks || resizingId) return;
         
-        e.stopPropagation()
-        setEditingTextId(obj.id)
+        e.stopPropagation();
+        setEditingTextId(obj.id);
         if (obj.type === 'plain_text') {
-            setInitialContent(obj.content)
+            setInitialContent(obj.content);
         }
-        dispatch(selectObject([obj.id]))
-    }
+        dispatch(selectObject([obj.id]));
+    };
 
     const stopEditingText = () => {
         if (editingTextId && textEditRef.current) {
-            const newContent = textEditRef.current.textContent || ''
-            const obj = slideObjects.find(o => o.id === editingTextId)
+            const newContent = textEditRef.current.textContent || '';
+            const obj = slideObjects.find(o => o.id === editingTextId);
             if (obj && obj.type === 'plain_text' && newContent !== initialContent) {
                 dispatch(changePlainTextContent({
                     content: newContent,
                     objectId: editingTextId,
                     slideId: props.slideId
-                }))
+                }));
             }
-            setEditingTextId(null)
-            setInitialContent('')
+            setEditingTextId(null);
+            setInitialContent('');
         }
-    }
+    };
 
     const handleTextKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
-            e.stopPropagation()
-            e.preventDefault()
-            setEditingTextId(null)
-            setInitialContent('')
+            e.stopPropagation();
+            e.preventDefault();
+            setEditingTextId(null);
+            setInitialContent('');
         } else if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            stopEditingText()
+            e.preventDefault();
+            stopEditingText();
         }
-    }
-
+    };
 
     const startDrag = (e: React.MouseEvent, objId: string) => {
-        if (props.disableObjectClicks || editingTextId === objId) return
+        if (props.disableObjectClicks || editingTextId === objId) return;
 
-        e.stopPropagation()
-        stopEditingText()
+        e.stopPropagation();
+        stopEditingText();
 
-        const slideRect = slideRef.current?.getBoundingClientRect()
-        if (!slideRect) return
+        const slideRect = slideRef.current?.getBoundingClientRect();
+        if (!slideRect) return;
 
         const selectedIds = props.objSelection?.includes(objId) 
             ? props.objSelection
-            : [objId]
+            : [objId];
         
         const objectsToDrag = slideObjects.filter(obj => 
             selectedIds.includes(obj.id)
-        )
+        );
 
-        const startMouseX = e.clientX
-        const startMouseY = e.clientY
+        const startMouseX = e.clientX;
+        const startMouseY = e.clientY;
         
         const startPositions = objectsToDrag.map(obj => ({
             id: obj.id,
@@ -162,23 +174,23 @@ export function ShowSlide(props: ShowSlideProps) {
             startY: obj.rect.y,
             width: obj.rect.width,
             height: obj.rect.height
-        }))
+        }));
 
-        setIsDragging(true)
+        setIsDragging(true);
 
         const onMouseMove = (moveEvent: MouseEvent) => {
-            const deltaX = moveEvent.clientX - startMouseX
-            const deltaY = moveEvent.clientY - startMouseY
+            const deltaX = moveEvent.clientX - startMouseX;
+            const deltaY = moveEvent.clientY - startMouseY;
 
             const transforms = startPositions.map(pos => {
                 const newX = Math.min(
                     Math.max(0, pos.startX + deltaX),
                     slideRect.width - pos.width
-                )
+                );
                 const newY = Math.min(
                     Math.max(0, pos.startY + deltaY),
                     slideRect.height - pos.height
-                )
+                );
 
                 return {
                     objectId: pos.id,
@@ -186,20 +198,19 @@ export function ShowSlide(props: ShowSlideProps) {
                     y: newY,
                     width: pos.width,
                     height: pos.height
-                }
-            })
-
+                };
+            });
             setTempTransform({
                 objectIds: transforms.map(t => t.objectId),
                 transforms
-            })
-        }
+            });
+        };
 
         const onMouseUp = () => {
-            document.removeEventListener('mousemove', onMouseMove)
-            document.removeEventListener('mouseup', onMouseUp)
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
 
-            const finalTransform = tempTransformRef.current
+            const finalTransform = tempTransformRef.current;
 
             if (finalTransform && 'transforms' in finalTransform) {
                 finalTransform.transforms.forEach((transform: SingleTransform) => {
@@ -208,46 +219,46 @@ export function ShowSlide(props: ShowSlideProps) {
                         slideId: props.slideId,
                         x: transform.x,
                         y: transform.y
-                    }))
-                })
+                    }));
+                });
             }
 
             setTimeout(() => {
-                setTempTransform(null)
-                setIsDragging(false)
-            }, 0)
-        }
+                setTempTransform(null);
+                setIsDragging(false);
+            }, 0);
+        };
 
-        document.addEventListener('mousemove', onMouseMove)
-        document.addEventListener('mouseup', onMouseUp)
-    }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
 
     const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
-        if (props.disableObjectClicks || editingTextId === objId) return
+        if (props.disableObjectClicks || editingTextId === objId) return;
 
-        e.stopPropagation()
-        stopEditingText()
+        e.stopPropagation();
+        stopEditingText();
 
-        const slideRect = slideRef.current?.getBoundingClientRect()
-        if (!slideRect) return
+        const slideRect = slideRef.current?.getBoundingClientRect();
+        if (!slideRect) return;
 
-        const obj = slideObjects.find(obj => obj.id === objId)
-        if (!obj) return
+        const obj = slideObjects.find(obj => obj.id === objId);
+        if (!obj) return;
 
-        const startMouseX = e.clientX
-        const startMouseY = e.clientY
-        const startLeft = obj.rect.x
-        const startTop = obj.rect.y
-        const startWidth = obj.rect.width
-        const startHeight = obj.rect.height
+        const startMouseX = e.clientX;
+        const startMouseY = e.clientY;
+        const startLeft = obj.rect.x;
+        const startTop = obj.rect.y;
+        const startWidth = obj.rect.width;
+        const startHeight = obj.rect.height;
 
-        setResizingId(objId)
+        setResizingId(objId);
 
         const onMouseMove = (moveEvent: MouseEvent) => {
-            const deltaX = moveEvent.clientX - startMouseX
-            const deltaY = moveEvent.clientY - startMouseY
+            const deltaX = moveEvent.clientX - startMouseX;
+            const deltaY = moveEvent.clientY - startMouseY;
 
-            const MIN_SIZE = 20
+            const MIN_SIZE = 20;
 
             const { newX, newY, newWidth, newHeight } = calculateResize(
                 direction,
@@ -264,7 +275,7 @@ export function ShowSlide(props: ShowSlideProps) {
                     maxHeight: slideRect.height,
                     minSize: MIN_SIZE
                 }
-            )
+            );
 
             setTempTransform({
                 objectId: objId,
@@ -272,14 +283,14 @@ export function ShowSlide(props: ShowSlideProps) {
                 y: newY,
                 width: newWidth,
                 height: newHeight
-            })
-        }
+            });
+        };
 
         const onMouseUp = () => {
-            document.removeEventListener('mousemove', onMouseMove)
-            document.removeEventListener('mouseup', onMouseUp)
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
 
-            const finalTransform = tempTransformRef.current
+            const finalTransform = tempTransformRef.current;
 
             if (finalTransform && 'objectId' in finalTransform) {
                 dispatch(resizeObject({
@@ -289,21 +300,32 @@ export function ShowSlide(props: ShowSlideProps) {
                     y: finalTransform.y,
                     width: finalTransform.width,
                     height: finalTransform.height
-                }))
+                }));
             }
 
             setTimeout(() => {
-                setTempTransform(null)
-                setResizingId(null)
-            }, 0)
-        }
+                setTempTransform(null);
+                setResizingId(null);
+            }, 0);
+        };
 
-        document.addEventListener('mousemove', onMouseMove)
-        document.addEventListener('mouseup', onMouseUp)
-    }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const handleTextObjectContextMenu = (e: React.MouseEvent, objId: string) => {
+        if (props.disableObjectClicks || resizingId) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (props.onTextObjectContextMenu) {
+            props.onTextObjectContextMenu(e, objId);
+        }
+    };
 
     const ResizeHandler = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
-        if (props.disableObjectClicks) return null
+        if (props.disableObjectClicks) return null;
 
         const handleClassNames = {
             'nw': `${styles.resizeHandle} ${styles.resizeHandleNw}`,
@@ -314,20 +336,20 @@ export function ShowSlide(props: ShowSlideProps) {
             's': `${styles.resizeHandle} ${styles.resizeHandleS}`,
             'w': `${styles.resizeHandle} ${styles.resizeHandleW}`,
             'e': `${styles.resizeHandle} ${styles.resizeHandleE}`,
-        }
+        };
 
         return (
             <div
                 onMouseDown={(e) => startResize(e, objId, direction)}
                 className={handleClassNames[direction]}
             />
-        )
-    }
+        );
+    };
 
-    const objSelection = props.objSelection || []
+    const objSelection = props.objSelection || [];
 
     const getObjectRect = (obj: SlideObject) => {
-        if (!tempTransform) return obj.rect
+        if (!tempTransform) return obj.rect;
         
         if ('objectId' in tempTransform && tempTransform.objectId === obj.id) {
             return {
@@ -335,23 +357,23 @@ export function ShowSlide(props: ShowSlideProps) {
                 y: tempTransform.y,
                 width: tempTransform.width,
                 height: tempTransform.height
-            }
+            };
         }
         
         if ('transforms' in tempTransform) {
-            const transform = tempTransform.transforms.find(t => t.objectId === obj.id)
+            const transform = tempTransform.transforms.find(t => t.objectId === obj.id);
             if (transform) {
                 return {
                     x: transform.x,
                     y: transform.y,
                     width: transform.width,
                     height: transform.height
-                }
+                };
             }
         }
         
-        return obj.rect
-    }
+        return obj.rect;
+    };
 
     return (
         <div
@@ -359,16 +381,17 @@ export function ShowSlide(props: ShowSlideProps) {
             className={`${styles.slide} ${props.className || ''}`}
             onClick={handleSlideClick}
             style={{
+                ...props.style,
                 backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
                 backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
                 cursor: props.disableObjectClicks ? 'default' : 'pointer'
             }}
         >
             {slideObjects.map(obj => {
-                const isSelected = objSelection.includes(obj.id)
-                const isMultipleSelected = isSelected && objSelection.length > 1
-                const isEditing = editingTextId === obj.id && obj.type === 'plain_text'
-                const rect = getObjectRect(obj)
+                const isSelected = objSelection.includes(obj.id);
+                const isMultipleSelected = isSelected && objSelection.length > 1;
+                const isEditing = editingTextId === obj.id && obj.type === 'plain_text';
+                const rect = getObjectRect(obj);
 
                 const objectClasses = [
                     styles.slideObject,
@@ -376,7 +399,7 @@ export function ShowSlide(props: ShowSlideProps) {
                     isMultipleSelected ? styles.multipleSelected : '',
                     props.disableObjectClicks ? styles.slideShowMode : '',
                     isEditing ? styles.editing : ''
-                ].join(' ')
+                ].join(' ');
 
                 return (
                     <div
@@ -384,6 +407,11 @@ export function ShowSlide(props: ShowSlideProps) {
                         className={objectClasses}
                         onClick={(e) => handleObjectClick(e, obj.id)}
                         onMouseDown={(e) => startDrag(e, obj.id)}
+                        onContextMenu={(e) => {
+                            if (obj.type === 'plain_text') {
+                                handleTextObjectContextMenu(e, obj.id);
+                            }
+                        }}
                         style={{
                             left: rect.x,
                             top: rect.y,
@@ -402,7 +430,9 @@ export function ShowSlide(props: ShowSlideProps) {
                                             fontFamily: obj.fontFamily,
                                             fontWeight: obj.weight,
                                             fontSize: `${obj.scale}em`,
-                                            outline: 'none'
+                                            outline: 'none',
+                                            color: obj.color || '#000000',
+                                            textAlign: obj.alignment || 'left'
                                         }}
                                         contentEditable={true}
                                         suppressContentEditableWarning={true}
@@ -418,6 +448,8 @@ export function ShowSlide(props: ShowSlideProps) {
                                             fontFamily: obj.fontFamily,
                                             fontWeight: obj.weight,
                                             fontSize: `${obj.scale}em`,
+                                            color: obj.color || '#000000',
+                                            textAlign: obj.alignment || 'left',
                                             cursor: props.disableObjectClicks ? 'default' : 'text'
                                         }}
                                         onDoubleClick={(e) => startTextEditing(e, obj)}
@@ -452,8 +484,8 @@ export function ShowSlide(props: ShowSlideProps) {
                             </>
                         )}
                     </div>
-                )
+                );
             })}
         </div>
-    )
+    );
 }

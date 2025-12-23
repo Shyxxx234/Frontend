@@ -18,9 +18,9 @@ const presentationSlice = createSlice({
     },
     
     restorePresentation: (state, action: PayloadAction<Presentation>) => {
-      state.selectedSlide = action.payload.selectedSlide;
+      state.selectedSlide = action.payload.selectedSlide || '';
       state.selectedObjects = action.payload.selectedObjects || [];
-      state.title = action.payload.title;
+      state.title = action.payload.title || 'Новая презентация';
     },
 
     selectObject: (state, action: PayloadAction<string[]>) => {

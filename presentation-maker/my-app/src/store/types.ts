@@ -38,6 +38,8 @@ export type PlainText = BaseSlideObject & {
     fontFamily: string
     weight: number
     scale: number
+    color?: string
+    alignment?: 'left' | 'center' | 'right' | 'justify'  
 }
 
 export type Image = BaseSlideObject & Picture

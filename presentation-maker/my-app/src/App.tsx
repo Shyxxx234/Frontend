@@ -13,19 +13,21 @@ import { selectSlide } from './store/presentationSlice'
 import { useHotkeys } from './hooks/useHotKeys'
 import { ChoosePresentationModalWindow } from './views/ChoosePresentationModalWindow/ChoosePresentationModalWindow'
 import { SpeakerNotesModalWindow } from './views/SpeakerNotesModalWindow/SpeakerNotesModalWIndow'
+import { browserHistory } from './store/historyAPI'
 
 function Editor() {
     const dispatch = useDispatch()
     const presentation = useSelector((state: RootState) => state.presentation)
     const slides = useSelector((state: RootState) => state.slides.slides)
-    const [showLoadModal, setShowLoadModal] = useState(true)
+    const [showLoadModal, setShowLoadModal] = useState(false)
     const [showSpeakerNotes, setShowSpeakerNotes] = useState(false)
     const location = useLocation()
     useHotkeys(false)
+    
 
-    window.addEventListener('popstate', async function() {
+    window.addEventListener('popstate', function () {
         if (location.pathname == '/editor') {
-            history.replaceState('editor', '')
+            browserHistory.replaceState('e', '')
         }
     })
 
@@ -33,25 +35,25 @@ function Editor() {
         if (slides.length === 0) {
             return
         }
-        
+
         const fullState = store.getState();
-        
+
         localStorage.setItem('presentationFullState', JSON.stringify(fullState));
-        
+
         const currentUrl = window.location.origin + window.location.pathname
         const speakerUrl = `${currentUrl}#speaker`
-        
+
         const width = 1200
         const height = 800
         const left = (window.screen.width - width) / 2
         const top = (window.screen.height - height) / 2
-        
+
         const newWindow = window.open(
             speakerUrl,
             'speakerNotes',
             `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
         )
-        
+
         if (newWindow) {
             setTimeout(() => {
                 newWindow.postMessage({
@@ -65,6 +67,9 @@ function Editor() {
 
     const handleCloseSpeakerNotes = () => {
         setShowSpeakerNotes(false)
+        if (slides.length == 1) {
+            setShowLoadModal(true)
+        }
     }
 
     useEffect(() => {
@@ -87,6 +92,11 @@ function Editor() {
     useEffect(() => {
         if (slides.length > 0 && !presentation.selectedSlide) {
             dispatch(selectSlide(slides[0].id))
+        }
+        console.log(browserHistory.state)
+        if (browserHistory.state[0] == 'l') {
+            setShowLoadModal(true)
+            browserHistory.replaceState('e', '')
         }
     }, [slides, presentation.selectedSlide, dispatch])
 
@@ -128,7 +138,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Navigate to="/login" />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/editor" element={<Editor />}  />
+                <Route path="/editor" element={<Editor />} />
                 <Route path="/player" element={<PlayerPage />} />
             </Routes>
         </Router>

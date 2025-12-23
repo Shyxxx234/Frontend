@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import styles from './loginPage.module.css'
 import { signOut } from '../../login/login'
+import { browserHistory } from '../../store/historyAPI'
+
 
 export function LoginPage() {
     const navigate = useNavigate()
@@ -13,13 +15,13 @@ export function LoginPage() {
     const [isLoginMode, setIsLoginMode] = useState(true)
     const [name, setName] = useState('')
     const [loginError, setLoginError] = useState(false)
-
+    
     useEffect(() => {
-        if (history.state == 'editor')  {
+        if (browserHistory.state[0] == 'e')  {
             signOut()
         }
         else if (user) {
-            history.replaceState('login', '')
+            browserHistory.replaceState('l', '')
             navigate('/editor')
         }
     }, [user, navigate])
@@ -35,12 +37,14 @@ export function LoginPage() {
         }
         
         if (success && user) {
+            browserHistory.replaceState('l', '')
             navigate('/editor')
         }
 
         if (!success) {
             setLoginError(true)
         }
+        
     }
     
     const handleSwitchMode = () => {
@@ -101,7 +105,7 @@ export function LoginPage() {
                     </button>
                 </form>
                 {loginError && 
-                    <span className={styles.loginError}>Указаны неверные почта или ароль</span>
+                    <span className={styles.loginError}>Указаны неверные почта или пароль</span>
                 }
             </div>
         </div>

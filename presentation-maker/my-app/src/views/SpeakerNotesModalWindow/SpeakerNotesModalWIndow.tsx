@@ -7,6 +7,8 @@ import { updateSlideNotes } from "../../store/slideSlice"
 import type { Slide, SlideObject } from "../../store/types"
 import { ShowSlide } from "../../common/ShowSlide"
 
+//TODO: Нужно также в режим докладчика импортировать объекты слайдов
+
 type SpeakerNotesModalWindowProps = {
     isOpen: boolean
     onClose: () => void
@@ -204,7 +206,6 @@ export function SpeakerNotesModalWindow({ isOpen, onClose, isNewWindow = false }
         };
     }, [debouncedNotes, currentSlide?.id, dispatch, notes, isNewWindow]);
 
-    // Обработка обновлений заметок в новом окне
     useEffect(() => {
         if (!isNewWindow) return;
 
@@ -219,7 +220,6 @@ export function SpeakerNotesModalWindow({ isOpen, onClose, isNewWindow = false }
         return () => window.removeEventListener('message', handleNotesUpdate);
     }, [isNewWindow, currentSlide?.id]);
 
-    // Обработка горячих клавиш
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (!isOpen && !isNewWindow) return;

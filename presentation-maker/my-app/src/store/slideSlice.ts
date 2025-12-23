@@ -7,7 +7,7 @@ type SlideState = {
   slides: Slide[]
 }
 
-const initialState: SlideState = {
+export const initialState: SlideState = {
   slides: []
 }
 
@@ -65,8 +65,10 @@ const slideSlice = createSlice({
         }
       }
     },
+    clearSlides: (state) => {
+      state.slides = []
+    },
 
-    // Добавьте этот редьюсер для обновления заметок
     updateSlideNotes: (state, action: PayloadAction<{ slideId: string; notes: string }>) => {
       const { slideId, notes } = action.payload
       const slide = state.slides.find(s => s.id === slideId)
@@ -76,7 +78,6 @@ const slideSlice = createSlice({
       }
     },
 
-    // Опционально: добавьте action для очистки заметок
     clearSlideNotes: (state, action: PayloadAction<string>) => {
       const slideId = action.payload
       const slide = state.slides.find(s => s.id === slideId)
@@ -85,6 +86,13 @@ const slideSlice = createSlice({
         slide.notes = ''
       }
     },
+
+    duplicateSlide: (state, action: PayloadAction<{slide: Slide, idx: number}>) => {
+      const { slide, idx } = action.payload
+      const safeIdx = Math.max(0, Math.min(idx + 1, state.slides.length))
+      state.slides.splice(safeIdx, 0, slide)
+      
+    }
   }
 })
 
@@ -95,8 +103,10 @@ export const {
   restoreSlides,
   changeBackgroundToColor,
   changeBackgroundToImage,
-  updateSlideNotes, // Экспортируйте новый action
-  clearSlideNotes,  // И этот тоже, если добавили
+  updateSlideNotes, 
+  clearSlideNotes,  
+  clearSlides,
+  duplicateSlide,
 } = slideSlice.actions
 
 export default slideSlice.reducer

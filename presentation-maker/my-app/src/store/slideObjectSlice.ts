@@ -142,6 +142,53 @@ const slideObjectSlice = createSlice({
         }
       }
     },
+    // В slideObjectSlice.ts добавьте:
+
+    changePlainTextWeight: (state, action: PayloadAction<{
+      weight: number;
+      objectId: string;
+      slideId: string
+    }>) => {
+      const { weight, objectId, slideId } = action.payload
+
+      if (state.objects[slideId]) {
+        const obj = state.objects[slideId].find(o => o.id === objectId)
+        if (obj && obj.type === 'plain_text') {
+          obj.weight = weight
+        }
+      }
+    },
+
+    changePlainTextColor: (state, action: PayloadAction<{
+      color: string;
+      objectId: string;
+      slideId: string
+    }>) => {
+      const { color, objectId, slideId } = action.payload
+
+      if (state.objects[slideId]) {
+        const obj = state.objects[slideId].find(o => o.id === objectId)
+        if (obj && obj.type === 'plain_text') {
+          // Добавьте свойство color в тип PlainText если его нет
+          obj.color = color
+        }
+      }
+    },
+
+    changePlainTextAlignment: (state, action: PayloadAction<{
+      alignment: 'left' | 'center' | 'right' | 'justify';
+      objectId: string;
+      slideId: string
+    }>) => {
+      const { alignment, objectId, slideId } = action.payload
+
+      if (state.objects[slideId]) {
+        const obj = state.objects[slideId].find(o => o.id === objectId)
+        if (obj && obj.type === 'plain_text') {
+          obj.alignment = alignment
+        }
+      }
+    },
     
 
     changePlainTextScale: (state, action: PayloadAction<{
@@ -170,7 +217,10 @@ export const {
   restoreObjects,
   changePlainTextContent,
   changePlainTextFontFamily,
-  changePlainTextScale
+  changePlainTextScale,
+  changePlainTextAlignment,
+  changePlainTextColor,
+  changePlainTextWeight
 } = slideObjectSlice.actions
 
 export default slideObjectSlice.reducer
