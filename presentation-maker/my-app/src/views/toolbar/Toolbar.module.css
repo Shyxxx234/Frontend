@@ -44,11 +44,12 @@
     position: absolute;
     top: 100%;
     left: 0px;
-    background-color: #16111E;
-    border: 1px solid white;
+    background-color: #000000;
+    border: 1px solid #535BF2;
     border-radius: 4px;
     z-index: 1000;
     min-width: 200px;
+    padding: 5px 12px;
 }
 
 .new_presentation {

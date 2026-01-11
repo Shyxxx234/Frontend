@@ -139,6 +139,7 @@ export const useHotkeys = (isSlideShow: boolean) => {
                     case 'd':
                     case 'D':
                         event.preventDefault()
+                        event.stopPropagation()
                         handleDuplicateSlide()
                         return
                     case 'M':

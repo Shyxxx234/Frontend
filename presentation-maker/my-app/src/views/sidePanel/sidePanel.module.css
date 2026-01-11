@@ -1,8 +1,8 @@
 .sidePanel {
     position: absolute;
-    left: 89%;
-    top: 30%;
-    width: 10%;
+    left: 91%;
+    top: 18%;
+    width: 8%;
     height: 50%;
     background-color: #16111E;
     border-radius: 10px;
@@ -13,7 +13,7 @@
 }
 
 .button {
-    margin: 20px auto 0px;
+    margin: 10px auto 0px;
     background-color: #535BF2;
     border: none;
     cursor: pointer;
@@ -26,6 +26,23 @@
 }
 
 .button:hover{
+    background-color: #3e44b6;
+}
+
+.historyButton {
+    background-color: #535BF2;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    transition: background-color 0.2s;
+    font-size: 25px;
+}
+
+.histiryButton:hover{
     background-color: #3e44b6;
 }
 
@@ -45,8 +62,9 @@
 }
 
 .text {
-    margin-left: 22%;
+    margin-left: 20%;
     margin-top: 10px;
+    margin-bottom: 5px;
 }
 
 .modalOverlay {
@@ -77,4 +95,9 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+}
+
+.userName {
+    font-size: 30px;
+    margin-left: 10px;
 }

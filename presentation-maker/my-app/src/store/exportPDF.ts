@@ -5,90 +5,6 @@ import type { RootState } from './store';
 
 type SlideObject = PlainText | Image;
 
-async function loadImageWithCORS(src: string): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-
-      if (ctx) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        resolve(dataUrl);
-      }
-    };
-
-    img.onerror = () => {
-
-      if (src.includes('appwrite.io') || src.includes('storage')) {
-        if (src.includes('appwrite.io')) {
-          const previewUrl = src.replace('/view?', '/preview?width=800&height=600&');
-
-          const previewImg = new Image();
-          previewImg.crossOrigin = 'anonymous';
-          previewImg.src = previewUrl;
-
-          previewImg.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = previewImg.width;
-            canvas.height = previewImg.height;
-            const ctx = canvas.getContext('2d');
-
-            if (ctx) {
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(previewImg, 0, 0);
-              resolve(canvas.toDataURL('image/jpeg', 0.95));
-            }
-          };
-
-          previewImg.onerror = () => {
-            resolve(createPlaceholderImage());
-          };
-        } else {
-          const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(src)}`;
-          const proxyImg = new Image();
-          proxyImg.crossOrigin = 'anonymous';
-          proxyImg.src = proxyUrl;
-
-          proxyImg.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = proxyImg.width;
-            canvas.height = proxyImg.height;
-            const ctx = canvas.getContext('2d');
-
-            if (ctx) {
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(proxyImg, 0, 0);
-              resolve(canvas.toDataURL('image/jpeg', 0.95));
-            }
-          };
-
-          proxyImg.onerror = () => {
-            resolve(createPlaceholderImage());
-          };
-        }
-      } else {
-        resolve(createPlaceholderImage());
-      }
-    };
-    img.src = src;
-
-    if (img.complete) {
-      img.dispatchEvent(new Event('load'));
-    }
-  });
-}
-
 function createPlaceholderImage(): string {
   const canvas = document.createElement('canvas');
   canvas.width = 200;
@@ -129,14 +45,13 @@ async function loadImageViaFetch(src: string): Promise<string> {
     });
 
     const blob = await response.blob();
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           resolve(reader.result);
         }
       };
-      reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
 }
@@ -157,7 +72,7 @@ export async function exportPresentationToPDF(
     slideWidth = 1280,
     slideHeight = 720,
     quality = 10,
-    margin = 10
+    margin = 0
   } = options;
 
   const pdf = new jsPDF({
@@ -203,10 +118,9 @@ export async function exportPresentationToPDF(
         const pictureBackground = slide.background as Picture;
         try {
           const bgDataUrl = await loadImageViaFetch(pictureBackground.src)
-            .catch(() => loadImageWithCORS(pictureBackground.src));
           slideElement.style.backgroundImage = `url(${bgDataUrl})`;
         } catch {
-          slideElement.style.backgroundColor = '#f0f0f0';
+          slideElement.style.backgroundColor = '#F0F0F0';
         }
         slideElement.style.backgroundSize = 'cover';
         slideElement.style.backgroundPosition = 'center';
@@ -251,17 +165,8 @@ export async function exportPresentationToPDF(
           imgElement.src = createPlaceholderImage();
 
           const imagePromise = (async () => {
-            try {
               const dataUrl = await loadImageViaFetch(imageObj.src);
               return { element: imgElement, dataUrl };
-            } catch {
-              try {
-                const dataUrl = await loadImageWithCORS(imageObj.src);
-                return { element: imgElement, dataUrl };
-              } catch {
-                return { element: imgElement, dataUrl: createPlaceholderImage() };
-              }
-            }
           })();
 
           imagePromises.push(imagePromise);
@@ -276,8 +181,8 @@ export async function exportPresentationToPDF(
         element.src = dataUrl;
       });
 
-      await new Promise(resolve => setTimeout(resolve, 100));
-      let backgroundColor = '#ffffff';
+      await new Promise(resolve => setTimeout(resolve, 50));
+      let backgroundColor = '#FFFFFF';
       if (slide.background.type === 'color') {
         backgroundColor = (slide.background as Color).color;
       }
@@ -327,7 +232,7 @@ export async function exportCurrentPresentation(
     slideObjects.objects,
     {
       fileName: fileNameWithExtension,
-      quality: 10
+      quality: 4
     }
   );
 }

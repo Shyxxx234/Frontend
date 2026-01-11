@@ -1,6 +1,7 @@
 import { ShowSlide } from "../../common/ShowSlide"
+import { SlideNotesPanel } from "../SlideNotesPanel/SlideNotesPanel"
 import styles from "./workspace.module.css"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useSelector, useDispatch } from 'react-redux'
 import {
     addTextObject,
@@ -14,27 +15,30 @@ import { uploadImage, uploadImageFromUrl } from "../../database/storage"
 import type { RootState } from "../../store/store"
 import { selectSlide } from "../../store/presentationSlice"
 import type { PlainText } from '../../store/types'
+import { updateSlideNotes } from '../../store/slideSlice'
 
 type ModalState = 'none' | 'source' | 'url'
 
 const FONT_FAMILIES = [
-        'Arial',
-        'Georgia',
-        'Times New Roman',
-        'Verdana',
-        'Tahoma',
-        'Courier New',
-        'Trebuchet MS',
-        'Comic Sans MS'
-    ]
+    'Arial',
+    'Georgia',
+    'Times New Roman',
+    'Verdana',
+    'Tahoma',
+    'Courier New',
+    'Trebuchet MS',
+    'Comic Sans MS'
+]
 
-    const FONT_WEIGHTS = [
-        { label: 'Обычный', value: 400 },
-        { label: 'Жирный', value: 800 }
-    ]
-const SCALE_TO_PX = 16 
+const FONT_WEIGHTS = [
+    { label: 'Обычный', value: 400 },
+    { label: 'Жирный', value: 800 }
+]
+
+const SCALE_TO_PX = 16
 const MIN_FONT_SIZE_PX = 8
 const MAX_FONT_SIZE_PX = 144
+const COLOR_CHANGE_TIMEOUT = 200
 
 export function Workspace() {
     const dispatch = useDispatch()
@@ -62,6 +66,9 @@ export function Workspace() {
     const [fontSizeInput, setFontSizeInput] = useState<string>("")
     const [showColorPicker, setShowColorPicker] = useState(false)
     const [customColor, setCustomColor] = useState("#000000")
+    const [colorInputValue, setColorInputValue] = useState("#000000")
+    const [colorTimeoutId, setColorTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null)
+    const [isNotesExpanded, setIsNotesExpanded] = useState<boolean>(false)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
     const workspaceRef = useRef<HTMLDivElement>(null)
@@ -75,24 +82,25 @@ export function Workspace() {
     }, [slides, selectedSlideId, dispatch])
 
     useEffect(() => {
-        if (textContextMenu) {
-            const slideObjectsList = slideObjects[selectedSlideId!] || []
+        if (textContextMenu && selectedSlideId) {
+            const slideObjectsList = slideObjects[selectedSlideId] || []
             const textObject = slideObjectsList.find(obj =>
                 obj.id === textContextMenu.objectId && obj.type === 'plain_text'
             )
 
             if (textObject && textObject.type === 'plain_text') {
-                // Конвертируем scale в пиксели для отображения
                 const plainTextObject = textObject as PlainText
                 const fontSizePx = scaleToPx(plainTextObject.scale)
                 setFontSizeInput(fontSizePx.toString())
+                setColorInputValue(plainTextObject.color || "#000000")
+                setCustomColor(plainTextObject.color || "#000000")
             }
         }
     }, [textContextMenu, selectedSlideId, slideObjects])
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (colorPickerRef.current && 
+            if (colorPickerRef.current &&
                 !colorPickerRef.current.contains(event.target as Node)) {
                 setShowColorPicker(false)
             }
@@ -101,8 +109,11 @@ export function Workspace() {
         document.addEventListener('mousedown', handleClickOutside)
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
+            if (colorTimeoutId) {
+                clearTimeout(colorTimeoutId)
+            }
         }
-    }, [])
+    }, [colorTimeoutId])
 
     const scaleToPx = (scale: number): number => {
         return Math.round(scale * SCALE_TO_PX)
@@ -136,7 +147,7 @@ export function Workspace() {
         const rect = workspaceRef.current?.getBoundingClientRect()
         if (!rect) return
 
-        const slideObjectsList = slideObjects[selectedSlideId!] || []
+        const slideObjectsList = slideObjects[selectedSlideId] || []
         const textObject = slideObjectsList.find(obj =>
             obj.id === objectId && obj.type === 'plain_text'
         )
@@ -154,7 +165,6 @@ export function Workspace() {
 
     const handleAddText = () => {
         if (selectedSlideId) {
-            console.log('Adding text to slide:', selectedSlideId)
             dispatch(addTextObject({ slideId: selectedSlideId }))
             setContextMenu(null)
         }
@@ -162,6 +172,11 @@ export function Workspace() {
 
     const handleAddImageClick = () => {
         setModalState('source')
+        setContextMenu(null)
+    }
+
+    const handleAddNotesClick = () => {
+        setIsNotesExpanded(true)
         setContextMenu(null)
     }
 
@@ -181,7 +196,6 @@ export function Workspace() {
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        console.log('File selected:', file)
 
         if (file && selectedSlideId) {
             if (!file.type.startsWith('image/')) {
@@ -193,19 +207,13 @@ export function Workspace() {
             setUploadError(null)
 
             try {
-                console.log('Uploading image to storage...')
                 const imageUrl = await uploadImage(file)
-                console.log('Image uploaded to storage, URL:', imageUrl)
-
                 dispatch(addImageObject({
                     slideId: selectedSlideId,
                     imageUrl
                 }))
-
                 setModalState('none')
-
-            } catch (error) {
-                console.error('Error uploading image:', error)
+            } catch {
                 setUploadError('Ошибка при загрузке изображения')
             } finally {
                 setIsUploading(false)
@@ -234,14 +242,38 @@ export function Workspace() {
         }
     }
 
+    const handleSaveNotes = (notes: string) => {
+        if (selectedSlideId) {
+            dispatch(updateSlideNotes({
+                slideId: selectedSlideId,
+                notes
+            }))
+        }
+    }
+
+    const handleClearNotes = () => {
+        if (selectedSlideId) {
+            dispatch(updateSlideNotes({
+                slideId: selectedSlideId,
+                notes: ''
+            }))
+        }
+    }
+
     const handleCloseContextMenu = () => {
         setContextMenu(null)
     }
 
     const handleCloseTextContextMenu = () => {
+        if (colorTimeoutId) {
+            clearTimeout(colorTimeoutId)
+            setColorTimeoutId(null)
+        }
         setTextContextMenu(null)
         setFontSizeInput("")
         setShowColorPicker(false)
+        setColorInputValue("#000000")
+        setCustomColor("#000000")
     }
 
     const handleCloseModal = () => {
@@ -260,7 +292,6 @@ export function Workspace() {
         }
     }
 
-    // Получение текущего текстового объекта для подсветки активных опций
     const getCurrentTextObject = (): PlainText | null => {
         if (!textContextMenu || !selectedSlideId) return null
         const slideObjectsList = slideObjects[selectedSlideId] || []
@@ -270,7 +301,6 @@ export function Workspace() {
         return obj as PlainText || null
     }
 
-    // Обработчики для форматирования текста
     const handleFontFamilyChange = (fontFamily: string) => {
         if (textContextMenu && selectedSlideId) {
             dispatch(changePlainTextFontFamily({
@@ -309,7 +339,7 @@ export function Workspace() {
         }
     }
 
-    const handleColorChange = (color: string) => {
+    const applyColorChange = useCallback((color: string) => {
         if (textContextMenu && selectedSlideId) {
             dispatch(changePlainTextColor({
                 color,
@@ -317,12 +347,44 @@ export function Workspace() {
                 slideId: selectedSlideId
             }))
         }
+    }, [textContextMenu, selectedSlideId, dispatch])
+
+    const handleColorChangeWithTimeout = (color: string) => {
+        setCustomColor(color)
+        setColorInputValue(color)
+
+        if (colorTimeoutId) {
+            clearTimeout(colorTimeoutId)
+        }
+
+        const newTimeoutId = setTimeout(() => {
+            if (/^#[0-9A-F]{6}$/i.test(color)) {
+                applyColorChange(color)
+            }
+            setColorTimeoutId(null)
+        }, COLOR_CHANGE_TIMEOUT)
+
+        setColorTimeoutId(newTimeoutId)
+    }
+
+    const handleColorChangeOnBlur = () => {
+        if (colorTimeoutId) {
+            clearTimeout(colorTimeoutId)
+            setColorTimeoutId(null)
+            if (/^#[0-9A-F]{6}$/i.test(colorInputValue)) {
+                applyColorChange(colorInputValue)
+            }
+        }
     }
 
     const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const color = e.target.value
-        setCustomColor(color)
-        handleColorChange(color)
+        handleColorChangeWithTimeout(color)
+    }
+
+    const handleColorTextInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const color = e.target.value
+        handleColorChangeWithTimeout(color)
     }
 
     const handleFontSizeInputKeyDown = (e: React.KeyboardEvent) => {
@@ -339,7 +401,6 @@ export function Workspace() {
 
     const currentSlideWithObjects = getSlideWithObjects()
     const currentTextObject = getCurrentTextObject()
-
 
     return (
         <div className={styles.workspaceContainer}>
@@ -393,6 +454,17 @@ export function Workspace() {
                             onTextObjectContextMenu={handleTextObjectContextMenu}
                         />
 
+                        {/* Используем новый компонент SlideNotesPanel */}
+                        <SlideNotesPanel
+                            slideIndex={slideIndex}
+                            currentNotes={slide?.notes || ''}
+                            isExpanded={isNotesExpanded}
+                            onToggle={() => setIsNotesExpanded(!isNotesExpanded)}
+                            onSaveNotes={handleSaveNotes}
+                            onClearNotes={handleClearNotes}
+                        />
+
+                        {/* Контекстное меню рабочей области */}
                         {contextMenu && (
                             <div
                                 className={styles.contextMenu}
@@ -414,9 +486,16 @@ export function Workspace() {
                                 >
                                     Вставить изображение
                                 </button>
+                                <button
+                                    className={styles.contextMenuItem}
+                                    onClick={handleAddNotesClick}
+                                >
+                                    {slide?.notes ? 'Редактировать заметки' : 'Добавить заметки'}
+                                </button>
                             </div>
                         )}
 
+                        {/* Контекстное меню для форматирования текста */}
                         {textContextMenu && (
                             <div
                                 className={styles.textContextMenu}
@@ -442,10 +521,9 @@ export function Workspace() {
                                                 max={MAX_FONT_SIZE_PX}
                                                 placeholder="Размер"
                                             />
-                                            <span className={styles.sizeUnit}></span>
+                                            <span className={styles.sizeUnit}>px</span>
                                         </div>
                                     </div>
-
                                 </div>
 
                                 <div className={styles.textMenuSection}>
@@ -501,20 +579,15 @@ export function Workspace() {
                                             <div className={styles.colorPickerPopup} onClick={(e) => e.stopPropagation()}>
                                                 <input
                                                     type="color"
-                                                    value={currentTextObject?.color || customColor}
+                                                    value={customColor}
                                                     onChange={handleCustomColorChange}
                                                     className={styles.colorPickerInput}
                                                 />
                                                 <input
                                                     type="text"
-                                                    value={currentTextObject?.color || customColor}
-                                                    onChange={(e) => {
-                                                        const newColor = e.target.value
-                                                        setCustomColor(newColor)
-                                                       if (/^#[0-9A-F]{6}$/i.test(newColor)) {
-                                                            handleColorChange(newColor)
-                                                        }
-                                                    }}
+                                                    value={colorInputValue}
+                                                    onChange={handleColorTextInputChange}
+                                                    onBlur={handleColorChangeOnBlur}
                                                     className={styles.colorTextInput}
                                                     placeholder="#000000"
                                                 />
@@ -544,6 +617,7 @@ export function Workspace() {
                             </div>
                         )}
 
+                        {/* Скрытый input для загрузки файлов */}
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -552,6 +626,7 @@ export function Workspace() {
                             onChange={handleFileSelect}
                         />
 
+                        {/* Модальные окна для изображений */}
                         {modalState === 'source' && (
                             <div className={styles.modalOverlay} onClick={handleCloseModal}>
                                 <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -645,5 +720,3 @@ export function Workspace() {
         </div>
     )
 }
-
-//TODO: Разнести файл и отладить загрузку картинки по URL

@@ -19,6 +19,7 @@ type ShowSlideProps = {
     objSelection?: Array<string>;
     style?: React.CSSProperties;
     onTextObjectContextMenu?: (e: React.MouseEvent, objectId: string) => void; 
+    externalObjects?: SlideObject[];
 }
 
 type ResizeDirection = 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'w' | 'e';
@@ -41,10 +42,12 @@ type TempTransform = SingleTransform | MultiTransform | null;
 export function ShowSlide(props: ShowSlideProps) {
     const dispatch = useDispatch();
 
-    const slideObjects = useSelector((state: RootState) =>
+    const slideObjectsFromStore = useSelector((state: RootState) =>
         state.slideObjects.objects[props.slideId] || [],
         (prev, next) => JSON.stringify(prev) === JSON.stringify(next)
     );
+
+    const slideObjects = props.externalObjects || slideObjectsFromStore;
 
     const [resizingId, setResizingId] = useState<string | null>(null);
     const [tempTransform, setTempTransform] = useState<TempTransform>(null);
@@ -92,8 +95,6 @@ export function ShowSlide(props: ShowSlideProps) {
     };
 
     const handleSlideClick = (e: React.MouseEvent) => {
-        // Проверяем, что клик был по пустому пространству слайда
-        // Игнорируем клики по элементам формы (select, input, button, etc.)
         const target = e.target as HTMLElement;
         const isFormElement = target.tagName === 'SELECT' || 
                               target.tagName === 'INPUT' || 
@@ -384,6 +385,8 @@ export function ShowSlide(props: ShowSlideProps) {
                 ...props.style,
                 backgroundColor: props.slide.background.type === 'color' ? props.slide.background.color : 'transparent',
                 backgroundImage: props.slide.background.type === 'picture' ? `url(${props.slide.background.src})` : 'none',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 cursor: props.disableObjectClicks ? 'default' : 'pointer'
             }}
         >

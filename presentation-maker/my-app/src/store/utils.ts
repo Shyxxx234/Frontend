@@ -157,7 +157,6 @@ export function openSpeakerModeInNewWindow(): Window | null {
         <body>
             <div id="root"></div>
             <script>
-                // Сообщаем основному окну, что мы готовы
                 window.opener.postMessage({ type: 'SPEAKER_MODE_READY' }, '*');
             </script>
         </body>

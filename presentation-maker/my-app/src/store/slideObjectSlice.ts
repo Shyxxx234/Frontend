@@ -30,6 +30,7 @@ const slideObjectSlice = createSlice({
       const { slideId } = action.payload
       const newTextObject: PlainText = {
         type: "plain_text",
+        color: 'white',
         content: defaultTextContent,
         fontFamily: defaultFontFamily,
         weight: defaultFontWeight,
@@ -142,7 +143,6 @@ const slideObjectSlice = createSlice({
         }
       }
     },
-    // В slideObjectSlice.ts добавьте:
 
     changePlainTextWeight: (state, action: PayloadAction<{
       weight: number;
@@ -169,7 +169,6 @@ const slideObjectSlice = createSlice({
       if (state.objects[slideId]) {
         const obj = state.objects[slideId].find(o => o.id === objectId)
         if (obj && obj.type === 'plain_text') {
-          // Добавьте свойство color в тип PlainText если его нет
           obj.color = color
         }
       }

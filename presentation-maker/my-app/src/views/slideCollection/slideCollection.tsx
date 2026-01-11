@@ -13,7 +13,7 @@ import {
 import { selectSlide } from '../../store/presentationSlice'
 import { Button } from "../../common/Button"
 import { createBlankSlide } from "../../store/utils"
-import { uploadImage } from "../../database/storage" // Импортируем функцию загрузки
+import { uploadImage } from "../../database/storage"
 
 type SlideCollectionProps = {
     onSlideSelect: (slideId: string) => void
@@ -146,10 +146,7 @@ export function SlideCollection(props: SlideCollectionProps) {
                 try {
                     setIsUploadingImage(true)
                     
-                    // Загружаем изображение в Appwrite
                     const imageUrl = await uploadImage(file)
-                    
-                    // Используем URL из Appwrite для фона слайда
                     dispatch(changeBackgroundToImage({
                         slideId: selectedSlideIdForColor,
                         imageUrl: imageUrl

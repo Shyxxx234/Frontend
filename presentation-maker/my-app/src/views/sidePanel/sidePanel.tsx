@@ -67,8 +67,8 @@ export function SidePanel() {
                 {loading ? (
                     <div style={{ fontSize: '12px', color: '#666' }}>Загрузка...</div>
                 ) : user ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <div style={{ fontSize: '30px', color: '#ffffffff' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column'}}>
+                        <div className={styles.userName}>
                             {user.name || user.email}
                         </div>
                         <Button
@@ -132,21 +132,21 @@ export function SidePanel() {
 
             <div className={styles.section}>
                 <h3 className={styles.text}>История</h3>
-                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex'}}>
                         <Button
-                            className={styles.button}
+                            className={styles.historyButton}
                             onClick={handleUndo}
                             disabled={!historyManager.canUndo()}
                         >
-                            Отменить
+                            ↺
                         </Button>
                         <Button
-                            className={styles.button}
+                            className={styles.historyButton}
                             onClick={handleRedo}
                             disabled={!historyManager.canRedo()}
                         >
-                            Повторить
+                            ↻
                         </Button>
                     </div>
                 </div>

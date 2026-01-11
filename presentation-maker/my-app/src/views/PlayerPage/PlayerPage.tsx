@@ -9,9 +9,9 @@ import styles from './playerPage.module.css';
 const SLIDE_WIDTH = 1920;
 const SLIDE_HEIGHT = 1080;
 
-const ZOOM = 1.38;        
-const OFFSET_X = -360;    
-const OFFSET_Y = -210;    
+const ZOOM = 1.38;
+const OFFSET_X = -360;
+const OFFSET_Y = -210;
 
 export function PlayerPage() {
     const navigate = useNavigate();
@@ -42,7 +42,7 @@ export function PlayerPage() {
     }, [slideIndex, slides, dispatch]);
 
     const handleExit = useCallback(() => {
-        history.replaceState('player', '');
+        history.replaceState('p', '');
         navigate('/editor');
     }, [navigate]);
 
@@ -76,23 +76,36 @@ export function PlayerPage() {
     }, [handleKeyDown, handleMouseDown]);
 
     useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === 'SLIDE_CHANGED') {
+                dispatch(selectSlide(event.data.slideId));
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [dispatch]);
+
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'currentSlideId' && e.newValue) {
+                dispatch(selectSlide(e.newValue));
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [dispatch]);
+
+    useEffect(() => {
         if (slides.length > 0 && !selectedSlideId) {
             dispatch(selectSlide(slides[0].id));
         }
     }, [slides, selectedSlideId, dispatch]);
 
     useEffect(() => {
-        document.body.style.margin = '0';
-        document.body.style.padding = '0';
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, []);
-
-    useEffect(() => {
         if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(console.warn);
+            document.documentElement.requestFullscreen();
         }
     }, []);
 

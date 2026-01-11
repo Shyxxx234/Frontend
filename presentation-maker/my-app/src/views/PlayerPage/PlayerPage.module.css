@@ -70,3 +70,13 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+.slideZoomContainer {
+    width: 110vw;
+    height: 100vh;
+    display: flex;
+    left: 0px;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}

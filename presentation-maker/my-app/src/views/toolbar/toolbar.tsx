@@ -148,12 +148,6 @@ export function Toolbar(props: ToolbarProps) {
                     </div>
                 )}
 
-                <Button
-                    onClick={() => console.log("Insert")}
-                    className={styles.button}
-                >
-                    Вставка
-                </Button>
             </div>
 
             {isEditing ? (
