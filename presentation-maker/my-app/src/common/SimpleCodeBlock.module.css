@@ -1,0 +1,563 @@
+.simpleCodeBlock {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  font-family: 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+}
+
+.codeContainer {
+  margin-top: -1%;
+  height: 105%;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  overflow-y: scroll;
+} 
+
+.codeWrapper {
+  display: flex;
+  min-height: 100%;
+  padding: 12px 0;
+}
+
+.lineNumbers {
+  display: flex;
+  flex-direction: column;
+  min-width: 3em;
+  padding: 0 12px 0 0;
+  text-align: right;
+  user-select: none;
+  border-right: 1px solid;
+  flex-shrink: 0;
+  font-size: inherit !important;
+}
+
+.lineNumber {
+  line-height: 1.6;
+  min-height: 1.6em;
+  opacity: 0.5;
+  font-size: inherit !important;
+  transition: opacity 0.2s;
+}
+
+.lineNumber:hover {
+  opacity: 0.8;
+}
+
+.codeContent {
+  flex: 1;
+  margin: 0;
+  padding: 0 16px;
+  overflow: visible;
+  white-space: pre;
+  tab-size: 2;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.codeContent code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.noCode {
+  padding: 16px;
+  text-align: center;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.themeLight {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: #24292e;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.themeLight .lineNumbers {
+  border-right-color: #d0d7de;
+  background-color: rgba(0,0,0,0.02);
+}
+
+.themeLight .lineNumber {
+  color: #6e7781;
+}
+
+.themeDark {
+  background: linear-gradient(135deg, #1e1e1e 0%, #252526 100%);
+  color: #d4d4d4;
+  border: 1px solid #333;
+}
+
+.themeDark .lineNumbers {
+  border-right-color: #404040;
+  background-color: rgba(255,255,255,0.03);
+}
+
+.themeDark .lineNumber {
+  color: #858585;
+}
+
+.themeHighContrast {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.themeHighContrast .lineNumbers {
+  border-right-color: #ffffff;
+  background-color: rgba(255,255,255,0.05);
+}
+
+.themeHighContrast .lineNumber {
+  color: #858585;
+}
+
+.codeToolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.languageBadge {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.copyButton {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+
+.copyButton:hover {
+  background: rgba(0, 0, 0, 0.95);
+  transform: translateY(-2px);
+}
+
+.codeContainer {
+  scrollbar-width: none;
+}
+
+.codeContainer::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.themeDark .codeContainer::-webkit-scrollbar-track,
+.themeHighContrast .codeContainer::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.themeLight .codeContainer::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.themeDark .codeContainer::-webkit-scrollbar-thumb,
+.themeHighContrast .codeContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+.themeLight .codeContainer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.codeContainer::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.themeDark :global(.token.comment),
+.themeDark :global(.token.prolog),
+.themeDark :global(.token.doctype),
+.themeDark :global(.token.cdata) {
+  color: #6a9955;
+  font-style: italic;
+}
+
+.themeDark :global(.token.punctuation) {
+  color: #d4d4d4;
+}
+
+.themeDark :global(.token.property) {
+  color: #9cdcfe;
+  font-weight: 500;
+}
+
+.themeDark :global(.token.tag) {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.boolean) {
+  color: #569cd6;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.number) {
+  color: #b5cea8;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.constant) {
+  color: #4fc1ff;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.symbol) {
+  color: #b5cea8;
+}
+
+.themeDark :global(.token.selector) {
+  color: #d7ba7d;
+  font-weight: 500;
+}
+
+.themeDark :global(.token.attr-name) {
+  color: #9cdcfe;
+  font-weight: 500;
+}
+
+.themeDark :global(.token.string) {
+  color: #ce9178;
+}
+
+.themeDark :global(.token.char) {
+  color: #ce9178;
+}
+
+.themeDark :global(.token.builtin) {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.operator) {
+  color: #d4d4d4;
+}
+
+.themeDark :global(.token.entity) {
+  color: #569cd6;
+}
+
+.themeDark :global(.token.url) {
+  color: #3794ff;
+}
+
+.themeDark :global(.token.atrule) {
+  color: #c586c0;
+}
+
+.themeDark :global(.token.attr-value) {
+  color: #ce9178;
+}
+
+.themeDark :global(.token.keyword) {
+  color: #c586c0;
+  font-weight: 700;
+}
+
+.themeDark :global(.token.function) {
+  color: #dcdcaa;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.class-name) {
+  color: #4ec9b0;
+  font-weight: 600;
+}
+
+.themeDark :global(.token.regex) {
+  color: #d16969;
+  font-weight: 500;
+}
+
+.themeDark :global(.token.important) {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.themeDark :global(.token.variable) {
+  color: #9cdcfe;
+}
+
+.themeDark :global(.token.deleted) {
+  color: #ce9178;
+  text-decoration: line-through;
+}
+
+.themeDark :global(.token.inserted) {
+  color: #b5cea8;
+}
+
+.themeLight :global(.token.comment),
+.themeLight :global(.token.prolog),
+.themeLight :global(.token.doctype),
+.themeLight :global(.token.cdata) {
+  color: #008000;
+  font-style: italic;
+}
+
+.themeLight :global(.token.punctuation) {
+  color: #393a34;
+}
+
+.themeLight :global(.token.property) {
+  color: #001080;
+  font-weight: 500;
+}
+
+.themeLight :global(.token.tag) {
+  color: #800000;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.boolean) {
+  color: #0000ff;
+  font-weight: 700;
+}
+
+.themeLight :global(.token.number) {
+  color: #098658;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.constant) {
+  color: #0070c1;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.symbol) {
+  color: #001080;
+}
+
+.themeLight :global(.token.selector) {
+  color: #800000;
+  font-weight: 500;
+}
+
+.themeLight :global(.token.attr-name) {
+  color: #ff0000;
+  font-weight: 500;
+}
+
+.themeLight :global(.token.string) {
+  color: #a31515;
+}
+
+.themeLight :global(.token.char) {
+  color: #a31515;
+}
+
+.themeLight :global(.token.builtin) {
+  color: #0070c1;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.operator) {
+  color: #000000;
+}
+
+.themeLight :global(.token.entity) {
+  color: #0000ff;
+}
+
+.themeLight :global(.token.url) {
+  color: #0000ff;
+}
+
+.themeLight :global(.token.atrule) {
+  color: #0000ff;
+}
+
+.themeLight :global(.token.attr-value) {
+  color: #a31515;
+}
+
+.themeLight :global(.token.keyword) {
+  color: #0000ff;
+  font-weight: 700;
+}
+
+.themeLight :global(.token.function) {
+  color: #795e26;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.class-name) {
+  color: #267f99;
+  font-weight: 600;
+}
+
+.themeLight :global(.token.regex) {
+  color: #811f3f;
+  font-weight: 500;
+}
+
+.themeLight :global(.token.important) {
+  color: #e90;
+  font-weight: 700;
+}
+
+.themeLight :global(.token.variable) {
+  color: #001080;
+}
+
+.themeLight :global(.token.deleted) {
+  color: #a31515;
+  text-decoration: line-through;
+}
+
+.themeLight :global(.token.inserted) {
+  color: #098658;
+}
+
+.themeHighContrast :global(.token.comment),
+.themeHighContrast :global(.token.prolog),
+.themeHighContrast :global(.token.doctype),
+.themeHighContrast :global(.token.cdata) {
+  color: #7ca668;
+  font-style: italic;
+}
+
+.themeHighContrast :global(.token.punctuation) {
+  color: #ffffff;
+}
+
+.themeHighContrast :global(.token.property),
+.themeHighContrast :global(.token.tag) {
+  color: #4ec9b0;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.boolean),
+.themeHighContrast :global(.token.number),
+.themeHighContrast :global(.token.constant) {
+  color: #b5cea8;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.symbol) {
+  color: #b5cea8;
+}
+
+.themeHighContrast :global(.token.selector),
+.themeHighContrast :global(.token.attr-name) {
+  color: #d7ba7d;
+  font-weight: 600;
+}
+
+.themeHighContrast :global(.token.string),
+.themeHighContrast :global(.token.char) {
+  color: #ce9178;
+}
+
+.themeHighContrast :global(.token.builtin) {
+  color: #4ec9b0;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.operator),
+.themeHighContrast :global(.token.entity),
+.themeHighContrast :global(.token.url) {
+  color: #ffffff;
+}
+
+.themeHighContrast :global(.token.atrule),
+.themeHighContrast :global(.token.attr-value) {
+  color: #ce9178;
+}
+
+.themeHighContrast :global(.token.keyword) {
+  color: #569cd6;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.function),
+.themeHighContrast :global(.token.class-name) {
+  color: #dcdcaa;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.regex) {
+  color: #d16969;
+  font-weight: 600;
+}
+
+.themeHighContrast :global(.token.important) {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.variable) {
+  color: #9cdcfe;
+  font-weight: 600;
+}
+
+.themeHighContrast :global(.token.deleted) {
+  color: #ce9178;
+  text-decoration: line-through;
+}
+
+.themeHighContrast :global(.token.inserted) {
+  color: #b5cea8;
+}
+
+.themeDark :global(.token.namespace) {
+  color: #4ec9b0;
+}
+
+.themeLight :global(.token.namespace) {
+  color: #267f99;
+}
+
+.themeHighContrast :global(.token.namespace) {
+  color: #4ec9b0;
+  font-weight: 700;
+}
+
+.themeDark :global(.token.bold) {
+  font-weight: 700;
+}
+
+.themeLight :global(.token.bold) {
+  font-weight: 700;
+}
+
+.themeHighContrast :global(.token.bold) {
+  font-weight: 700;
+}
+
+.themeDark :global(.token.italic) {
+  font-style: italic;
+}
+
+.themeLight :global(.token.italic) {
+  font-style: italic;
+}
+
+.themeHighContrast :global(.token.italic) {
+  font-style: italic;
+}

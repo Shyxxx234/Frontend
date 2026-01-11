@@ -30,7 +30,18 @@ export type ElementSelection = {
     selectedObjects: Array<string>
 }
 
-export type SlideObject = PlainText | Image
+export type CodeBlock = BaseSlideObject & {
+    type: 'code_block';
+    content: string;
+    language: string;
+    theme?: string;
+    fontSize?: number;
+    showLineNumbers?: boolean;
+    id: string;
+};
+
+export type SlideObject = PlainText | Image | CodeBlock
+
 
 export type PlainText = BaseSlideObject & {
     type: 'plain_text'

@@ -1,4 +1,3 @@
-/* workspace.module.css - стили только для Workspace компонента */
 .workspaceContainer {
     position: absolute;
     display: flex;
@@ -7,187 +6,6 @@
     gap: 15px;
     left: 25%;
     top: 20%;
-}
-
-.workspaceMainContent {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-}
-
-.workspaceWithPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.formattingPanel {
-    width: 280px;
-    min-width: 280px;
-    background: rgb(0, 0, 0);
-    border: 1px solid #535BF2;
-    border-radius: 10px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    margin-top: 60px;
-}
-
-.panelTitle {
-    margin: 0 0 16px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #535BF2;
-}
-
-.noSelection {
-    color: #aaa;
-    font-style: italic;
-    text-align: center;
-    padding: 20px 0;
-    margin: 0;
-    font-size: 14px;
-}
-
-.section {
-    margin-bottom: 16px;
-}
-
-.label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 14px;
-    color: #ddd;
-    font-weight: 500;
-}
-
-.select {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #535BF2;
-    border-radius: 4px;
-    font-size: 14px;
-    background: rgb(20, 20, 20);
-    color: white;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-
-.select:focus {
-    outline: none;
-    border-color: #4348C4;
-}
-
-.sizeButtons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.sizeButton {
-    padding: 6px 10px;
-    border: 1px solid #535BF2;
-    background: rgb(20, 20, 20);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    min-width: 36px;
-    color: white;
-    transition: all 0.2s;
-}
-
-.sizeButton:hover {
-    border-color: #4348C4;
-    background: rgba(83, 91, 242, 0.1);
-}
-
-.sizeButton.active {
-    background: #535BF2;
-    color: white;
-    border-color: #535BF2;
-}
-
-.weightButtons {
-    display: flex;
-    gap: 6px;
-}
-
-.weightButton {
-    flex: 1;
-    padding: 8px 6px;
-    border: 1px solid #535BF2;
-    background: rgb(20, 20, 20);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    text-align: center;
-    color: white;
-    transition: all 0.2s;
-}
-
-.weightButton:hover {
-    border-color: #4348C4;
-    background: rgba(83, 91, 242, 0.1);
-}
-
-.weightButton.active {
-    background: #535BF2;
-    color: white;
-    border-color: #535BF2;
-}
-
-.colorPicker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.colorButton {
-    width: 28px;
-    height: 28px;
-    border: 2px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.colorButton:hover {
-    transform: scale(1.1);
-    border-color: white;
-}
-
-.colorButton:active {
-    transform: scale(0.95);
-}
-
-.alignmentButtons {
-    display: flex;
-    gap: 6px;
-}
-
-.alignmentButton {
-    flex: 1;
-    padding: 8px 6px;
-    border: 1px solid #535BF2;
-    background: rgb(20, 20, 20);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    text-align: center;
-    color: white;
-    transition: all 0.2s;
-}
-
-.alignmentButton:hover {
-    border-color: #4348C4;
-    background: rgba(83, 91, 242, 0.1);
-}
-
-.alignmentButton.active {
-    background: #535BF2;
-    color: white;
-    border-color: #535BF2;
 }
 
 .workspaceNavigation {
@@ -249,6 +67,110 @@
     font-size: 18px;
 }
 
+.notesPanel {
+    position: absolute;
+    top: 50%;
+    right: -320px;
+    transform: translateY(-50%);
+    width: 300px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #535BF2;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 100;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(83, 91, 242, 0.3);
+}
+
+.notesPanel.expanded {
+    right: -350px;
+    transform: translateY(-50%);
+}
+
+.notesHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #535BF2;
+}
+
+.notesTitle {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.notesToggle {
+    background: none;
+    border: none;
+    color: #535BF2;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 5px;
+    transition: transform 0.2s;
+}
+
+.notesToggle:hover {
+    transform: scale(1.1);
+}
+
+.notesContent {
+    margin-bottom: 15px;
+}
+
+.notesTextarea {
+    width: 100%;
+    height: 200px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    padding: 12px;
+    color: white;
+    font-size: 14px;
+    resize: none;
+    font-family: inherit;
+}
+
+.notesTextarea:focus {
+    outline: none;
+    border-color: #4348C4;
+    box-shadow: 0 0 0 2px rgba(83, 91, 242, 0.2);
+}
+
+.notesFooter {
+    display: flex;
+    gap: 10px;
+}
+
+.notesButton {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notesButton:hover {
+    background: #535BF2;
+    border-color: #4348C4;
+}
+
+.notesButton.clear {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.notesButton.clear:hover {
+    background: rgba(220, 53, 69, 0.2);
+}
+
 .contextMenu {
     position: absolute;
     background: rgb(0, 0, 0);
@@ -276,139 +198,6 @@
     background: rgba(83, 91, 242, 0.2);
 }
 
-.modalOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1001;
-}
-
-.modal {
-    background: rgb(0, 0, 0);
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    margin: 0 0 15px 0;
-    font-size: 18px;
-    border: 1px solid #535BF2;
-}
-
-.urlInput {
-    width: 94%;
-    padding: 8px 12px;
-    border: 1px solid #535BF2;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 15px;
-    background: rgb(20, 20, 20);
-    color: white;
-}
-
-.urlInput:focus {
-    outline: none;
-    border-color: #4348C4;
-}
-
-.modalButtons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.modalButton {
-    padding: 8px 16px;
-    border: 1px solid #535BF2;
-    border-radius: 4px;
-    background: rgb(20, 20, 20);
-    color: white;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.modalButton:hover:not(:disabled) {
-    background: #535BF2;
-    border-color: #4348C4;
-}
-
-.modalButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: rgb(40, 40, 40);
-}
-
-.sourceButtons {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.sourceButton {
-    flex: 1;
-    padding: 12px 16px;
-    border: 2px solid #535BF2;
-    border-radius: 8px;
-    background: rgb(20, 20, 20);
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s;
-}
-
-.sourceButton:hover:not(:disabled) {
-    background: #535BF2;
-    border-color: #4348C4;
-}
-
-.sourceButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.uploadingMessage {
-    color: #fff;
-    text-align: center;
-    padding: 10px;
-    font-size: 14px;
-}
-
-.errorMessage {
-    color: #dc3545;
-    background: rgba(220, 53, 69, 0.1);
-    padding: 10px;
-    border-radius: 4px;
-    margin: 10px 0;
-    font-size: 14px;
-}
-
-.slideShowMode {
-    position: absolute;
-    left: -25px;
-    top: 40px;
-    background: black;
-    transform: scale(1.9);
-}
-
-.slideShowMode .slide {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.slideWrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Контекстное меню для текста */
 .textContextMenu {
     position: absolute;
     background: rgb(0, 0, 0);
@@ -435,7 +224,6 @@
     font-weight: 500;
 }
 
-/* Управление размером */
 .sizeControl {
     display: flex;
     gap: 4px;
@@ -477,7 +265,6 @@
     align-items: center;
 }
 
-/* Выбор шрифта */
 .fontSelect {
     width: 100%;
     padding: 6px 8px;
@@ -494,7 +281,6 @@
     border-color: #4348C4;
 }
 
-/* Начертание */
 .weightOptions {
     display: flex;
     gap: 4px;
@@ -522,7 +308,6 @@
     border-color: #4348C4;
 }
 
-/* Цвета */
 .colorPickerContainer {
     position: relative;
 }
@@ -531,20 +316,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-}
-
-.colorOption {
-    width: 24px;
-    height: 24px;
-    border: 2px solid transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.colorOption:hover {
-    transform: scale(1.1);
-    border-color: white;
 }
 
 .customColorButton {
@@ -623,33 +394,6 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
-.alignmentOptions {
-    display: flex;
-    gap: 4px;
-}
-
-.alignmentOption {
-    flex: 1;
-    padding: 8px 4px;
-    border: 1px solid #535BF2;
-    background: rgb(20, 20, 20);
-    color: white;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-}
-
-.alignmentOption:hover {
-    background: rgba(83, 91, 242, 0.3);
-}
-
-.alignmentOption.active {
-    background: #535BF2;
-    border-color: #4348C4;
-}
-
 .closeMenuButton {
     width: 100%;
     padding: 8px;
@@ -667,7 +411,428 @@
     background: #4348C4;
 }
 
+.codeContextMenu {
+    position: absolute;
+    background: rgb(0, 0, 0);
+    border: 2px solid #535BF2;
+    border-radius: 8px;
+    padding: 6px 0;
+    box-shadow: 0 4px 20px rgba(83, 91, 242, 0.3);
+    z-index: 1002;
+    min-width: 180px;
+}
+
+.codeMenuItem {
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.codeMenuItem:hover {
+    background: rgba(83, 91, 242, 0.2);
+}
+
+.codeMenuItem:not(:last-child) {
+    border-bottom: 1px solid rgba(83, 91, 242, 0.3);
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: rgb(0, 0, 0);
+    padding: 24px;
+    border-radius: 10px;
+    width: 400px;
+    border: 2px solid #535BF2;
+    box-shadow: 0 8px 32px rgba(83, 91, 242, 0.3);
+}
+
+.modal h3 {
+    color: white;
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    text-align: center;
+}
+
+.urlInput {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    background: rgb(20, 20, 20);
+    color: white;
+}
+
+.urlInput:focus {
+    outline: none;
+    border-color: #4348C4;
+    box-shadow: 0 0 0 2px rgba(83, 91, 242, 0.2);
+}
+
+.modalButtons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modalButton {
+    padding: 8px 20px;
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modalButton:hover:not(:disabled) {
+    background: #535BF2;
+    border-color: #4348C4;
+    transform: translateY(-1px);
+}
+
+.modalButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sourceButtons {
+    display: flex;
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.sourceButton {
+    flex: 1;
+    padding: 14px 0;
+    border: 2px solid #535BF2;
+    border-radius: 8px;
+    background: rgb(20, 20, 20);
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.sourceButton:hover:not(:disabled) {
+    background: #535BF2;
+    border-color: #4348C4;
+    transform: translateY(-2px);
+}
+
+.sourceButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.uploadingMessage {
+    color: #535BF2;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.errorMessage {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    font-size: 14px;
+    border-left: 3px solid #ff6b6b;
+}
+
+.codeModal {
+    background: rgb(0, 0, 0);
+    padding: 24px;
+    border-radius: 10px;
+    width: 700px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 2px solid #535BF2;
+    box-shadow: 0 8px 32px rgba(83, 91, 242, 0.4);
+}
+
+.codeModalSection {
+    margin-bottom: 20px;
+}
+
+.codeModalLabel {
+    display: block;
+    color: white;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.languageSelect {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.languageSelect:focus {
+    outline: none;
+    border-color: #4348C4;
+}
+
+.codeEditorContainer {
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+    background: rgb(20, 20, 20);
+}
+
+.codeTextarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: 'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+}
+
+.codeTextarea:focus {
+    background: rgba(30, 30, 30, 0.8);
+}
+
+.codeEditorOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.codeEditorModal {
+    background: rgb(0, 0, 0);
+    border-radius: 12px;
+    padding: 0;
+    width: 900px;
+    max-width: 95vw;
+    height: 700px;
+    max-height: 95vh;
+    border: 2px solid #535BF2;
+    box-shadow: 0 10px 40px rgba(83, 91, 242, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.codeEditorHeader {
+    padding: 20px 24px;
+    background: rgba(20, 20, 20, 0.9);
+    border-bottom: 1px solid #535BF2;
+}
+
+.codeEditorHeader h3 {
+    color: white;
+    margin: 0 0 15px 0;
+    font-size: 18px;
+}
+
+.codeEditorSettings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.codeEditorSetting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.codeEditorSetting label {
+    color: white;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.codeEditorSelect {
+    padding: 6px 10px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    background: rgb(30, 30, 30);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.codeEditorNumberInput {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid #535BF2;
+    border-radius: 4px;
+    background: rgb(30, 30, 30);
+    color: white;
+    font-size: 13px;
+    text-align: center;
+}
+
+.codeEditorNumberInput:focus {
+    outline: none;
+    border-color: #4348C4;
+}
+
+.codeEditorSetting input[type="checkbox"] {
+    margin-right: 5px;
+    transform: scale(1.2);
+}
+
+.codeEditorContent {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    background: rgb(10, 10, 10);
+}
+
+.codeEditorContent .codeTextarea {
+    width: 100%;
+    height: 100%;
+    min-height: auto;
+    padding: 15px;
+    font-size: 15px;
+    line-height: 1.6;
+    background: transparent;
+    resize: none;
+}
+
+.codeEditorButtons {
+    padding: 20px 24px;
+    background: rgba(20, 20, 20, 0.9);
+    border-top: 1px solid #535BF2;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.codeEditorButton {
+    padding: 10px 24px;
+    border: 1px solid #535BF2;
+    border-radius: 6px;
+    background: rgb(20, 20, 20);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.codeEditorButton:hover {
+    background: #535BF2;
+    border-color: #4348C4;
+    transform: translateY(-1px);
+}
+
+.codeEditorButton:last-child {
+    background: rgba(108, 117, 125, 0.2);
+    border-color: #6C757D;
+}
+
+.codeEditorButton:last-child:hover {
+    background: #6C757D;
+    border-color: #545b62;
+}
+
 .slideDisabled {
     opacity: 0.7;
     pointer-events: none;
+}
+
+.hiddenInput {
+    display: none;
+}
+
+.workspaceStatus {
+    color: #aaa;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: center;
+    min-height: 18px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.contextMenu,
+.textContextMenu,
+.codeContextMenu,
+.modal {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.sizeControl {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.sizeButton {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #535BF2;
+    background: rgb(20, 20, 20);
+    color: white;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.sizeButton:hover {
+    background: #535BF2;
+    border-color: #4348C4;
+}
+
+.sizeButton:active {
+    transform: scale(0.95);
 }

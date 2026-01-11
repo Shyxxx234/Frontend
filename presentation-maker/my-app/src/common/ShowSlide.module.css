@@ -18,6 +18,61 @@
     background-color: rgba(33, 150, 243, 0.1);
 }
 
+.codeBlockContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.codeEditor {
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    outline: none;
+    padding: 10px;
+    box-sizing: border-box;
+    font-family: 'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre;
+    overflow: auto;
+    tab-size: 2;
+}
+
+.codeDisplay {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.codeBlockLanguageBadge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.codeEditing {
+    border: 2px dashed #007bff !important;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
 .textObject {
     width: 100%;
     height: 100%;
@@ -118,4 +173,173 @@
 
 .editing {
     z-index: 10;
+}
+
+.codeWithLines {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.lineNumbers {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(128, 128, 128, 0.1);
+    padding: 8px 4px 8px 8px;
+    text-align: right;
+    min-width: 40px;
+    user-select: none;
+    border-right: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.lineNumber {
+    font-family: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace";
+    font-size: inherit;
+    line-height: 1.5;
+    color: rgba(128, 128, 128, 0.7);
+    padding-right: 4px;
+}
+
+.codeLines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 8px 8px 4px;
+    overflow: auto;
+}
+
+.codeLine {
+    font-family: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace";
+    font-size: inherit;
+    line-height: 1.5;
+    white-space: pre;
+    min-height: 1.5em;
+}
+
+.codeContent {
+    font-family: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace";
+    font-size: inherit;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: block;
+    padding: 8px;
+}
+
+.noCode {
+    font-family: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace";
+    font-size: inherit;
+    color: rgba(128, 128, 128, 0.7);
+    font-style: italic;
+    padding: 8px;
+    text-align: center;
+}
+
+.vsDark .lineNumbers {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+.vsDark .lineNumber {
+    color: rgba(128, 128, 128, 0.8);
+}
+
+.vs .lineNumbers {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-right-color: rgba(0, 0, 0, 0.1);
+}
+
+.vs .lineNumber {
+    color: rgba(128, 128, 128, 0.6);
+}
+
+.codeEditorWrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.codeEditor {
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    outline: none;
+    padding: 8px;
+    box-sizing: border-box;
+    font-family: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace";
+    line-height: 1.5;
+    white-space: pre;
+    tab-size: 4;
+    overflow: auto;
+}
+
+.codeDisplayWrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.codeDisplay {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+.codeBlockLanguageBadge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.codeBlockLanguageBadge.vsDark {
+    background: rgba(255, 255, 255, 0.2);
+    color: #d4d4d4;
+}
+
+.codeBlockLanguageBadge.vs {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000000;
+}
+
+.codeBlockContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.codeEditOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  border-radius: 4px;
+}
+
+.codeEditMessage {
+  color: white;
+  font-size: 14px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  font-family: 'Segoe UI', sans-serif;
 }

@@ -1,9 +1,9 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import type { Slide, PlainText, Image, Color, Picture } from './types';
+import type { Slide, PlainText, Image, Color, Picture, CodeBlock } from './types';
 import type { RootState } from './store';
 
-type SlideObject = PlainText | Image;
+type ExportSlideObject = PlainText | Image;
 
 function createPlaceholderImage(): string {
   const canvas = document.createElement('canvas');
@@ -56,9 +56,44 @@ async function loadImageViaFetch(src: string): Promise<string> {
     });
 }
 
+function convertCodeBlockToText(codeBlock: CodeBlock): PlainText {
+    return {
+        type: 'plain_text',
+        content: codeBlock.content,
+        fontFamily: 'Courier New, monospace',
+        weight: 400,
+        scale: 0.8,
+        color: '#000000',
+        alignment: 'left',
+        rect: codeBlock.rect,
+        id: codeBlock.id
+    };
+}
+
+function prepareObjectsForExport(slideObjects: Record<string, Array<PlainText | Image | CodeBlock>>): Record<string, ExportSlideObject[]> {
+    const result: Record<string, ExportSlideObject[]> = {};
+    
+    for (const slideId in slideObjects) {
+        const objects = slideObjects[slideId];
+        const exportObjects: ExportSlideObject[] = [];
+        
+        for (const obj of objects) {
+            if (obj.type === 'code_block') {
+                exportObjects.push(convertCodeBlockToText(obj));
+            } else if (obj.type === 'plain_text' || obj.type === 'picture') {
+                exportObjects.push(obj);
+            }
+        }
+        
+        result[slideId] = exportObjects;
+    }
+    
+    return result;
+}
+
 export async function exportPresentationToPDF(
   slides: Slide[],
-  slideObjects: Record<string, SlideObject[]>,
+  slideObjects: Record<string, Array<PlainText | Image | CodeBlock>>,
   options: {
     fileName?: string;
     slideWidth?: number;
@@ -74,6 +109,8 @@ export async function exportPresentationToPDF(
     quality = 10,
     margin = 0
   } = options;
+
+  const exportObjects = prepareObjectsForExport(slideObjects);
 
   const pdf = new jsPDF({
     orientation: 'landscape',
@@ -100,7 +137,7 @@ export async function exportPresentationToPDF(
       const slide = slides[i];
       const slideId = slide.id;
 
-      const objects = slideObjects[slideId] || [];
+      const objects = exportObjects[slideId] || [];
 
       container.innerHTML = '';
 
@@ -147,6 +184,16 @@ export async function exportPresentationToPDF(
           textElement.style.justifyContent = 'flex-start';
           textElement.style.overflow = 'hidden';
           textElement.style.wordBreak = 'break-word';
+          
+          if (obj.fontFamily.includes('Courier') || obj.fontFamily.includes('monospace')) {
+            textElement.style.whiteSpace = 'pre';
+            textElement.style.fontFamily = 'Courier New, monospace';
+            textElement.style.backgroundColor = '#f5f5f5';
+            textElement.style.padding = '8px';
+            textElement.style.borderRadius = '4px';
+            textElement.style.border = '1px solid #ddd';
+          }
+          
           textElement.textContent = obj.content || '';
 
           slideElement.appendChild(textElement);

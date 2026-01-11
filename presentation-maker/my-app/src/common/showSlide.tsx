@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import styles from "./ShowSlide.module.css";
 import type { Slide, SlideObject } from '../store/types';
 import type { RootState } from '../store/store';
@@ -10,6 +10,8 @@ import {
     changePlainTextContent
 } from '../store/slideObjectSlice';
 import { calculateResize } from '../store/utils';
+import { updateCodeBlockContent } from '../store/slideObjectSlice';
+import SimpleCodeBlock from './SimpleCodeBlock';
 
 type ShowSlideProps = {
     slide: Slide;
@@ -18,7 +20,8 @@ type ShowSlideProps = {
     slideId: string;
     objSelection?: Array<string>;
     style?: React.CSSProperties;
-    onTextObjectContextMenu?: (e: React.MouseEvent, objectId: string) => void; 
+    onTextObjectContextMenu?: (e: React.MouseEvent, objectId: string) => void;
+    onCodeBlockContextMenu?: (e: React.MouseEvent, objectId: string) => void;
     externalObjects?: SlideObject[];
 }
 
@@ -39,6 +42,8 @@ type MultiTransform = {
 
 type TempTransform = SingleTransform | MultiTransform | null;
 
+const SCALE_TO_PX = 16;
+
 export function ShowSlide(props: ShowSlideProps) {
     const dispatch = useDispatch();
 
@@ -53,10 +58,17 @@ export function ShowSlide(props: ShowSlideProps) {
     const [tempTransform, setTempTransform] = useState<TempTransform>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [editingTextId, setEditingTextId] = useState<string | null>(null);
+    const [editingCodeBlockId, setEditingCodeBlockId] = useState<string | null>(null);
     const [initialContent, setInitialContent] = useState<string>('');
+    const [codeContent, setCodeContent] = useState<string>('');
     const slideRef = useRef<HTMLDivElement>(null);
     const textEditRef = useRef<HTMLDivElement>(null);
+    const codeEditRef = useRef<HTMLTextAreaElement>(null);
     const tempTransformRef = useRef<TempTransform>(null);
+
+    const scaleToPx = (scale: number): number => {
+        return Math.round(scale * SCALE_TO_PX);
+    };
 
     useEffect(() => {
         tempTransformRef.current = tempTransform;
@@ -79,6 +91,16 @@ export function ShowSlide(props: ShowSlideProps) {
             sel?.addRange(range);
         }
     }, [editingTextId]);
+
+    useEffect(() => {
+        if (editingCodeBlockId && codeEditRef.current) {
+            codeEditRef.current.focus();
+            const obj = slideObjects.find(o => o.id === editingCodeBlockId);
+            if (obj && obj.type === 'code_block') {
+                setCodeContent(obj.content);
+            }
+        }
+    }, [editingCodeBlockId, slideObjects]);
 
     const handleObjectClick = (e: React.MouseEvent, objId: string) => {
         if (props.disableObjectClicks || resizingId) return;
@@ -107,6 +129,7 @@ export function ShowSlide(props: ShowSlideProps) {
             !isFormElement) {
             dispatch(selectObject([]));
             stopEditingText();
+            stopEditingCodeBlock();
         }
     };
 
@@ -119,7 +142,16 @@ export function ShowSlide(props: ShowSlideProps) {
             setInitialContent(obj.content);
         }
         dispatch(selectObject([obj.id]));
+        setEditingCodeBlockId(null);
     };
+
+    const startCodeBlockEditing = useCallback((objId: string) => {
+        if (props.disableObjectClicks) return;
+        
+        setEditingCodeBlockId(objId);
+        dispatch(selectObject([objId]));
+        setEditingTextId(null);
+    }, [props.disableObjectClicks, dispatch]);
 
     const stopEditingText = () => {
         if (editingTextId && textEditRef.current) {
@@ -137,6 +169,24 @@ export function ShowSlide(props: ShowSlideProps) {
         }
     };
 
+    const stopEditingCodeBlock = () => {
+        if (editingCodeBlockId && codeContent) {
+            const obj = slideObjects.find(o => o.id === editingCodeBlockId);
+            if (obj && obj.type === 'code_block' && codeContent !== obj.content) {
+                dispatch(updateCodeBlockContent({
+                    content: codeContent,
+                    objectId: editingCodeBlockId,
+                    slideId: props.slideId,
+                    theme: obj.theme,
+                    fontSize: obj.fontSize,
+                    showLineNumbers: obj.showLineNumbers
+                }));
+            }
+            setEditingCodeBlockId(null);
+            setCodeContent('');
+        }
+    };
+
     const handleTextKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
             e.stopPropagation();
@@ -149,11 +199,36 @@ export function ShowSlide(props: ShowSlideProps) {
         }
     };
 
+    const handleCodeKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Escape') {
+            e.stopPropagation();
+            e.preventDefault();
+            setEditingCodeBlockId(null);
+            setCodeContent('');
+        } else if (e.key === 'Enter' && e.ctrlKey) {
+            e.preventDefault();
+            stopEditingCodeBlock();
+        } else if (e.key === 'Tab') {
+            e.preventDefault();
+            const textarea = e.currentTarget;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            
+            const newValue = codeContent.substring(0, start) + '  ' + codeContent.substring(end);
+            setCodeContent(newValue);
+            
+            setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + 2;
+            }, 0);
+        }
+    };
+
     const startDrag = (e: React.MouseEvent, objId: string) => {
-        if (props.disableObjectClicks || editingTextId === objId) return;
+        if (props.disableObjectClicks || editingTextId === objId || editingCodeBlockId === objId) return;
 
         e.stopPropagation();
         stopEditingText();
+        stopEditingCodeBlock();
 
         const slideRect = slideRef.current?.getBoundingClientRect();
         if (!slideRect) return;
@@ -235,10 +310,11 @@ export function ShowSlide(props: ShowSlideProps) {
     };
 
     const startResize = (e: React.MouseEvent, objId: string, direction: ResizeDirection) => {
-        if (props.disableObjectClicks || editingTextId === objId) return;
+        if (props.disableObjectClicks || editingTextId === objId || editingCodeBlockId === objId) return;
 
         e.stopPropagation();
         stopEditingText();
+        stopEditingCodeBlock();
 
         const slideRect = slideRef.current?.getBoundingClientRect();
         if (!slideRect) return;
@@ -325,6 +401,17 @@ export function ShowSlide(props: ShowSlideProps) {
         }
     };
 
+    const handleCodeBlockContextMenu = (e: React.MouseEvent, objId: string) => {
+        if (props.disableObjectClicks || resizingId) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (props.onCodeBlockContextMenu) {
+            props.onCodeBlockContextMenu(e, objId);
+        }
+    };
+
     const ResizeHandler = ({ direction, objId }: { direction: ResizeDirection, objId: string }) => {
         if (props.disableObjectClicks) return null;
 
@@ -376,6 +463,22 @@ export function ShowSlide(props: ShowSlideProps) {
         return obj.rect;
     };
 
+    const handleCodeBlockDoubleClick = (obj: SlideObject) => {
+        if (props.disableObjectClicks || editingCodeBlockId === obj.id) return;
+        
+        if (obj.type === 'code_block') {
+            startCodeBlockEditing(obj.id);
+        }
+    };
+
+    const handleCodeContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setCodeContent(e.target.value);
+    };
+
+    const handleCodeBlur = () => {
+        stopEditingCodeBlock();
+    };
+
     return (
         <div
             ref={slideRef}
@@ -394,6 +497,7 @@ export function ShowSlide(props: ShowSlideProps) {
                 const isSelected = objSelection.includes(obj.id);
                 const isMultipleSelected = isSelected && objSelection.length > 1;
                 const isEditing = editingTextId === obj.id && obj.type === 'plain_text';
+                const isCodeEditing = editingCodeBlockId === obj.id && obj.type === 'code_block';
                 const rect = getObjectRect(obj);
 
                 const objectClasses = [
@@ -401,8 +505,14 @@ export function ShowSlide(props: ShowSlideProps) {
                     isSelected ? styles.selected : '',
                     isMultipleSelected ? styles.multipleSelected : '',
                     props.disableObjectClicks ? styles.slideShowMode : '',
-                    isEditing ? styles.editing : ''
+                    isEditing ? styles.editing : '',
+                    isCodeEditing ? styles.codeEditing : '',
+                    obj.type === 'code_block' ? styles.codeBlockObject : ''
                 ].join(' ');
+
+                const fontSize = obj.type === 'plain_text' ? 
+                    scaleToPx(obj.scale) : 
+                    obj.type === 'code_block' ? obj.fontSize || 14 : 16;
 
                 return (
                     <div
@@ -413,6 +523,8 @@ export function ShowSlide(props: ShowSlideProps) {
                         onContextMenu={(e) => {
                             if (obj.type === 'plain_text') {
                                 handleTextObjectContextMenu(e, obj.id);
+                            } else if (obj.type === 'code_block') {
+                                handleCodeBlockContextMenu(e, obj.id);
                             }
                         }}
                         style={{
@@ -420,7 +532,8 @@ export function ShowSlide(props: ShowSlideProps) {
                             top: rect.y,
                             width: rect.width,
                             height: rect.height,
-                            cursor: props.disableObjectClicks ? 'default' : (isEditing ? 'text' : 'move')
+                            cursor: props.disableObjectClicks ? 'default' : (isEditing ? 'text' : (isCodeEditing ? 'text' : 'move')),
+                            overflow: 'hidden'
                         }}
                     >
                         {obj.type === 'plain_text' && (
@@ -432,10 +545,17 @@ export function ShowSlide(props: ShowSlideProps) {
                                         style={{
                                             fontFamily: obj.fontFamily,
                                             fontWeight: obj.weight,
-                                            fontSize: `${obj.scale}em`,
+                                            fontSize: `${fontSize}px`,
                                             outline: 'none',
                                             color: obj.color || '#000000',
-                                            textAlign: obj.alignment || 'left'
+                                            textAlign: obj.alignment || 'left',
+                                            lineHeight: 1.2,
+                                            width: '100%',
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: obj.alignment === 'right' ? 'flex-end' : 
+                                                          obj.alignment === 'center' ? 'center' : 'flex-start'
                                         }}
                                         contentEditable={true}
                                         suppressContentEditableWarning={true}
@@ -450,10 +570,19 @@ export function ShowSlide(props: ShowSlideProps) {
                                         style={{
                                             fontFamily: obj.fontFamily,
                                             fontWeight: obj.weight,
-                                            fontSize: `${obj.scale}em`,
+                                            fontSize: `${fontSize}px`,
                                             color: obj.color || '#000000',
                                             textAlign: obj.alignment || 'left',
-                                            cursor: props.disableObjectClicks ? 'default' : 'text'
+                                            cursor: props.disableObjectClicks ? 'default' : 'text',
+                                            lineHeight: 1.2,
+                                            width: '100%',
+                                            height: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: obj.alignment === 'right' ? 'flex-end' : 
+                                                          obj.alignment === 'center' ? 'center' : 'flex-start',
+                                            overflow: 'hidden',
+                                            wordWrap: 'break-word'
                                         }}
                                         onDoubleClick={(e) => startTextEditing(e, obj)}
                                     >
@@ -473,8 +602,43 @@ export function ShowSlide(props: ShowSlideProps) {
                                 }}
                             />
                         )}
+                        {obj.type === 'code_block' && (
+                            <div 
+                                className={styles.codeBlockContainer}
+                                onDoubleClick={() => handleCodeBlockDoubleClick(obj)}
+                            >
+                                {isCodeEditing ? (
+                                    <div className={styles.codeEditorWrapper}>
+                                        <textarea
+                                            ref={codeEditRef}
+                                            className={styles.codeEditor}
+                                            value={codeContent}
+                                            onChange={handleCodeContentChange}
+                                            onBlur={handleCodeBlur}
+                                            onKeyDown={handleCodeKeyDown}
+                                            style={{
+                                                fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+                                                fontSize: `${obj.fontSize || 14}px`,
+                                                backgroundColor: obj.theme === 'vs-dark' ? '#1e1e1e' : '#ffffff',
+                                                color: obj.theme === 'vs-dark' ? '#d4d4d4' : '#000000'
+                                            }}
+                                            spellCheck="false"
+                                        />
+                                    </div>
+                                ) : (
+                                    <SimpleCodeBlock
+                                        codeBlock={obj}
+                                        readOnly={props.disableObjectClicks}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        )}
 
-                        {!props.disableObjectClicks && isSelected && objSelection.length === 1 && !isEditing && (
+                        {!props.disableObjectClicks && isSelected && objSelection.length === 1 && !isEditing && !isCodeEditing && (
                             <>
                                 <ResizeHandler direction="nw" objId={obj.id} />
                                 <ResizeHandler direction="ne" objId={obj.id} />
