@@ -91,7 +91,7 @@ export const useSpeechRecognition = (
                 const completeBuffer = fullBufferRef.current.trim() || speechBuffer.trim();
                 if (completeBuffer) {
                     setIsProcessingCommand(true);
-                    showNotification(`Команда распознана! Добавляю ВЕСЬ буфер (${completeBuffer.length} символов) в AI...`);
+                    showNotification(`Команда распознана! Добавляю буфер (${completeBuffer.length} символов) в AI...`);
 
                     onActivationCommand(completeBuffer);
 

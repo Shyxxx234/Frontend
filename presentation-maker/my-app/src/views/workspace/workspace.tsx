@@ -645,29 +645,6 @@ export function Workspace() {
     const currentSlideWithObjects = getSlideWithObjects()
     const currentTextObject = getCurrentTextObject()
 
-    const renderDebugInfo = () => {
-        if (!currentTextObject) return null;
-        
-        return (
-            <div style={{
-                position: 'absolute',
-                bottom: 10,
-                right: 10,
-                background: 'rgba(0,0,0,0.8)',
-                color: 'white',
-                padding: '10px',
-                borderRadius: '5px',
-                fontSize: '12px',
-                zIndex: 9999
-            }}>
-                <div>ID: {currentTextObject.id}</div>
-                <div>Scale: {currentTextObject.scale}</div>
-                <div>FontSize (px): {scaleToPx(currentTextObject.scale)}</div>
-                <div>Content: {currentTextObject.content}</div>
-            </div>
-        );
-    };
-
     return (
         <div className={styles.workspaceContainer}>
             <div className={styles.workspaceNavigation}>
@@ -722,9 +699,6 @@ export function Workspace() {
                             onCodeBlockContextMenu={handleCodeBlockContextMenu}
                         />
 
-                        {/* Отладочная информация */}
-                        {currentTextObject && renderDebugInfo()}
-
                         <SlideNotesPanel
                             slideIndex={slideIndex}
                             currentNotes={slide?.notes || ''}
@@ -734,7 +708,6 @@ export function Workspace() {
                             onClearNotes={handleClearNotes}
                         />
 
-                        {/* Контекстное меню рабочей области */}
                         {contextMenu && (
                             <div
                                 className={styles.contextMenu}
@@ -771,7 +744,6 @@ export function Workspace() {
                             </div>
                         )}
 
-                        {/* Контекстное меню для форматирования текста */}
                         {textContextMenu && (
                             <div
                                 className={styles.textContextMenu}
@@ -819,13 +791,6 @@ export function Workspace() {
                                         >
                                             +
                                         </button>
-                                    </div>
-                                    <div style={{
-                                        fontSize: '11px',
-                                        color: '#aaa',
-                                        marginTop: '4px'
-                                    }}>
-                                        Текущий scale: {textContextMenu.currentScale}
                                     </div>
                                 </div>
 

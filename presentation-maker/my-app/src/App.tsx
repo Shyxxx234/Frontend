@@ -43,10 +43,10 @@ function Editor() {
         const currentUrl = window.location.origin + window.location.pathname
         const speakerUrl = `${currentUrl}#speaker`
 
-        const width = 1200
-        const height = 800
-        const left = (window.screen.width - width) / 2
-        const top = (window.screen.height - height) / 2
+        const width = 1920
+        const height = 1080
+        const left = 0
+        const top = 0
 
         const newWindow = window.open(
             speakerUrl,

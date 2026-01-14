@@ -27,7 +27,7 @@ const SimpleCodeBlock: React.FC<SimpleCodeBlockProps> = ({
 
   useEffect(() => {
     const loadPrism = async () => {
-      if ((window as unknown as { Prism?: PrismStatic }).Prism) {
+      if ((window as { Prism?: PrismStatic }).Prism) {
         setIsPrismLoaded(true);
         return;
       }

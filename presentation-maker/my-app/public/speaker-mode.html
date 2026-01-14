@@ -22,22 +22,18 @@
 <body>
     <div id="root"></div>
     <script>
-        // Получаем данные из основного окна
         const presentationData = window.opener ? window.opener.presentationDataForSpeakerMode : null;
         
-        // Сохраняем в глобальной области видимости
         if (presentationData) {
             window.presentationData = presentationData;
         }
         
-        // Ждем загрузки скрипта приложения
         setTimeout(() => {
             if (window.renderSpeakerNotes && presentationData) {
                 window.renderSpeakerNotes(presentationData);
             }
         }, 100);
     </script>
-    <!-- Подключаем сборку React -->
     <script src="/static/js/speaker-mode.js"></script>
 </body>
 </html>

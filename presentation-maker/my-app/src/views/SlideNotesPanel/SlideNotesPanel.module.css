@@ -1,4 +1,3 @@
-/* SlideNotesPanel.module.css */
 .notesPanel {
     position: absolute;
     right: -400px;
@@ -18,7 +17,7 @@
 
 .notesPanel.notesExpanded {
     width: 1000px;
-    height: 600px; /* Добавляем фиксированную высоту при раскрытии */
+    height: 600px;
 }
 
 .notesHeader {
@@ -31,7 +30,7 @@
     align-items: center;
     user-select: none;
     transition: background 0.2s;
-    flex-shrink: 0; /* Запрещаем сжатие заголовка */
+    flex-shrink: 0; 
 }
 
 .notesHeader:hover {
@@ -51,20 +50,19 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    flex: 1; /* Занимает всё доступное пространство */
-    overflow: hidden; /* Скрываем переполнение контейнера */
+    flex: 1; 
+    overflow: hidden; 
 }
 
-/* Контейнер для заметок с прокруткой */
 .notesPreviewContainer {
-    flex: 1; /* Занимает всё доступное пространство */
+    flex: 1; 
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Важно для правильной работы flex с overflow */
+    min-height: 0;
 }
 
 .notesPreview {
-    flex: 1; /* Занимает всё доступное пространство */
+    flex: 1; 
     padding: 12px;
     border: 1px solid #535BF2;
     border-radius: 4px;
@@ -77,12 +75,11 @@
     transition: all 0.2s;
     margin-bottom: 12px;
     color: white;
-    overflow-y: auto; /* Добавляем вертикальную прокрутку */
-    max-height: none !important; /* Убираем ограничение высоты */
-    min-height: 120px; /* Минимальная высота */
+    overflow-y: auto; 
+    max-height: none !important; 
+    min-height: 120px; 
 }
 
-/* Стили для полосы прокрутки */
 .notesPreview::-webkit-scrollbar {
     width: 8px;
 }
@@ -106,15 +103,13 @@
     border-color: #4348C4;
 }
 
-/* Убираем ненужные стили для обрезания текста */
 .notesPreviewText {
-    /* Убираем ограничение высоты и скрытие */
     max-height: none;
     overflow: visible;
 }
 
 .notesPreviewMore {
-    display: none; /* Скрываем сообщение о дополнительных символах */
+    display: none; 
 }
 
 .noNotes {
@@ -135,7 +130,7 @@
     display: flex;
     gap: 8px;
     margin-top: 12px;
-    flex-shrink: 0; /* Запрещаем сжатие кнопок */
+    flex-shrink: 0; 
 }
 
 .notesButton {
@@ -178,7 +173,6 @@
     border-color: rgba(200, 35, 51, 0.9);
 }
 
-/* Стили для режима редактирования */
 .notesTextarea {
     width: 100%;
     padding: 12px;
@@ -192,7 +186,7 @@
     background: rgba(20, 20, 20, 0.8);
     color: white;
     transition: border-color 0.2s;
-    flex: 1; /* Текстовое поле занимает всё пространство */
+    flex: 1;
     min-height: 200px;
 }
 
@@ -202,7 +196,6 @@
     box-shadow: 0 0 0 2px rgba(83, 91, 242, 0.25);
 }
 
-/* Стили для модального окна заметок */
 .notesModal {
     max-width: 600px;
     max-height: 80vh;

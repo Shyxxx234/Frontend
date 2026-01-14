@@ -104,8 +104,8 @@ export async function exportPresentationToPDF(
 ): Promise<void> {
   const {
     fileName = 'presentation.pdf',
-    slideWidth = 1280,
-    slideHeight = 720,
+    slideWidth = 1000,
+    slideHeight = 600,
     quality = 10,
     margin = 0
   } = options;
@@ -188,10 +188,8 @@ export async function exportPresentationToPDF(
           if (obj.fontFamily.includes('Courier') || obj.fontFamily.includes('monospace')) {
             textElement.style.whiteSpace = 'pre';
             textElement.style.fontFamily = 'Courier New, monospace';
-            textElement.style.backgroundColor = '#f5f5f5';
             textElement.style.padding = '8px';
             textElement.style.borderRadius = '4px';
-            textElement.style.border = '1px solid #ddd';
           }
           
           textElement.textContent = obj.content || '';
